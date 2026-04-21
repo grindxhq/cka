@@ -33,8 +33,8 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Install frontend dependencies
-        run: cd frontend && npm ci
+      - name: Install and build frontend
+        run: cd frontend && npm ci && npm run build
 
       - name: Go vet
         run: go vet ./...
