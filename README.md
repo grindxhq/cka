@@ -58,6 +58,8 @@ On macOS, after dragging to Applications, run this once to bypass Gatekeeper:
 xattr -cr /Applications/grindx\ cka.app
 ```
 
+> **Windows note:** Cluster creation is slower on Windows due to Docker Desktop running through WSL2. Be patient on first launch — it's pulling images.
+
 ### Option 2: Build from source
 
 Additional build dependencies: [Go 1.22+](https://go.dev/dl/), [Node.js 18+](https://nodejs.org/), and the [Wails CLI](https://wails.io/).

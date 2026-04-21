@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -160,7 +161,12 @@ func (s *ExamService) StartExam(duration int) error {
 }
 
 func runSetupCommand(command, kubeconfig string) error {
-	cmd := exec.Command("sh", "-c", command)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", command)
+	} else {
+		cmd = exec.Command("sh", "-c", command)
+	}
 	cmd.Env = append(cmd.Environ(), "KUBECONFIG="+kubeconfig)
 	out, err := cmd.CombinedOutput()
 	if err != nil {

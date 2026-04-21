@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -582,7 +583,11 @@ func (m *Manager) mergeKubeconfigs() error {
 
 	mergedPath := filepath.Join(m.homeDir, ".kube", "cka-mock-merged-config")
 	cmd := exec.Command("kubectl", "config", "view", "--merge", "--flatten")
-	cmd.Env = append(os.Environ(), "KUBECONFIG="+strings.Join(paths, ":"))
+	pathSep := ":"
+	if runtime.GOOS == "windows" {
+		pathSep = ";"
+	}
+	cmd.Env = append(os.Environ(), "KUBECONFIG="+strings.Join(paths, pathSep))
 	out, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("merge kubeconfigs: %w", err)
