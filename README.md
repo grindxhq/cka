@@ -52,7 +52,11 @@ Download the latest release for your platform from the [Releases](https://github
 - **Linux** — `grindx-cka-linux-amd64.tar.gz`
 - **Windows** — `grindx-cka-windows-amd64.zip`
 
-On macOS, if you see "app is from an unidentified developer", right-click the app and select **Open**.
+On macOS, after dragging to Applications, run this once to bypass Gatekeeper:
+
+```bash
+xattr -cr /Applications/grindx\ cka.app
+```
 
 ### Option 2: Build from source
 
