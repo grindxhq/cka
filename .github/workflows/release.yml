@@ -55,19 +55,30 @@ jobs:
       - name: Build
         run: wails build -platform ${{ matrix.platform }}
 
-      # macOS: create DMG
-      - name: Create DMG
+      # macOS: ad-hoc sign + create DMG
+      - name: Sign and create DMG
         if: runner.os == 'macOS'
         run: |
+          # Ad-hoc sign to reduce Gatekeeper severity
+          codesign --force --deep --sign - "build/bin/grindx-cka.app"
+
+          # Strip quarantine attribute
+          xattr -cr "build/bin/grindx-cka.app"
+
+          # Create a staging folder with just the .app
+          mkdir -p dmg-staging
+          cp -R "build/bin/grindx-cka.app" dmg-staging/
+
           brew install create-dmg
           create-dmg \
             --volname "grindx cka" \
             --window-pos 200 120 \
             --window-size 600 400 \
-            --icon-size 80 \
-            --app-drop-link 400 200 \
+            --icon-size 100 \
+            --icon "grindx-cka.app" 175 200 \
+            --app-drop-link 425 200 \
             "grindx-cka-macos-universal.dmg" \
-            "build/bin/grindx-cka.app" || true
+            "dmg-staging/" || true
           # create-dmg returns 1 if it can't find a signing identity, but the DMG is still created
           ls -la *.dmg
 
