@@ -1,0 +1,56 @@
+id: "s5-08-kubelet-config"
+title: "Inspect Kubelet Configuration"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s5-cluster1"
+task: |
+  Inspect the kubelet configuration on the control-plane node.
+
+  1. Find the kubelet config file path by checking the kubelet process arguments
+  2. Save the kubelet's `clusterDNS` value to `/tmp/kubelet-dns.txt` on the control-plane node
+  3. Save the kubelet's `clusterDomain` value to `/tmp/kubelet-domain.txt` on the control-plane node
+setup:
+  - "sleep 1"
+validation:
+  - description: "DNS file exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /tmp/kubelet-dns.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "DNS file has IP"
+    command: "docker exec cka-s5-cluster1-control-plane cat /tmp/kubelet-dns.txt | grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+'"
+    expect: "."
+    match: "contains"
+  - description: "Domain file exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /tmp/kubelet-domain.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Domain file has cluster.local"
+    command: "docker exec cka-s5-cluster1-control-plane cat /tmp/kubelet-domain.txt"
+    expect: "cluster.local"
+    match: "contains"
+hint: |
+  1. Access the node: `ssh cka-s5-cluster1-control-plane`
+  2. Check kubelet args: `ps aux | grep kubelet` — look for `--config` flag
+  3. Read the config file (usually `/var/lib/kubelet/config.yaml`)
+  4. Extract `clusterDNS` and `clusterDomain` values
+  5. Or use the API: `kubectl get --raw /api/v1/nodes/<node>/proxy/configz`
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster1-control-plane
+
+  # Step 1: Find kubelet config path
+  ps aux | grep kubelet | grep -o "\-\-config=[^ ]*"
+
+  # Step 2: Extract clusterDNS
+  grep "clusterDNS" /var/lib/kubelet/config.yaml -A1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" > /tmp/kubelet-dns.txt
+
+  # Step 3: Extract clusterDomain
+  grep "clusterDomain" /var/lib/kubelet/config.yaml | awk "{print \$2}" > /tmp/kubelet-domain.txt
+
+  # Verify
+  cat /tmp/kubelet-dns.txt
+  cat /tmp/kubelet-domain.txt
+
+  # Exit the node
+  exit

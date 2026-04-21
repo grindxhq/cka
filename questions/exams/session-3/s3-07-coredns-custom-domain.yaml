@@ -1,0 +1,49 @@
+id: "s3-07-coredns-custom-domain"
+title: "CoreDNS Custom Stub Domain Configuration"
+category: "networking"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster2"
+task: |
+  Configure CoreDNS to add a custom stub domain `consul.local` that forwards DNS queries to `10.150.0.1`.
+
+  Modify the CoreDNS ConfigMap to add the stub domain configuration, and verify that the configuration is applied.
+setup: []
+validation:
+  - description: "CoreDNS ConfigMap contains stub domain"
+    command: "kubectl -n kube-system get configmap coredns -o yaml"
+    expect: "consul.local"
+    match: "contains"
+  - description: "Stub domain forwards to correct IP"
+    command: "kubectl -n kube-system get configmap coredns -o yaml"
+    expect: "10.150.0.1"
+    match: "contains"
+hint: |
+  Edit the CoreDNS ConfigMap with kubectl edit.
+
+  In the Corefile, add a stub domain block:
+  consul.local:53 {
+    errors
+    cache 30
+    forward . 10.150.0.1
+  }
+
+  Place it after the ".:53" block.
+solution: |
+  # Export the current CoreDNS ConfigMap
+  kubectl -n kube-system get configmap coredns -o yaml > /tmp/coredns-cm.yaml
+
+  # Patch the Corefile to add the consul.local stub domain block
+  kubectl -n kube-system get configmap coredns -o jsonpath='{.data.Corefile}' > /tmp/corefile
+  echo '' >> /tmp/corefile
+  echo 'consul.local:53 {' >> /tmp/corefile
+  echo '    errors' >> /tmp/corefile
+  echo '    cache 30' >> /tmp/corefile
+  echo '    forward . 10.150.0.1' >> /tmp/corefile
+  echo '}' >> /tmp/corefile
+
+  # Replace the ConfigMap with the updated Corefile
+  kubectl -n kube-system create configmap coredns --from-file=Corefile=/tmp/corefile --dry-run=client -o yaml | kubectl apply -f -
+
+  # Restart CoreDNS to pick up changes
+  kubectl -n kube-system rollout restart deployment coredns

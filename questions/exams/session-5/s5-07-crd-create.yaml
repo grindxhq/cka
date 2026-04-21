@@ -1,0 +1,93 @@
+id: "s5-07-crd-create"
+title: "Create a CustomResourceDefinition"
+category: "Cluster Architecture"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s5-cluster1"
+task: |
+  Create a CustomResourceDefinition (CRD) for a resource called `BackupJob` with the following specifications:
+
+  - Group: `backup.example.com`
+  - Version: `v1`
+  - Scope: `Namespaced`
+  - Kind: `BackupJob`
+  - Plural: `backupjobs`
+  - Singular: `backupjob`
+  - Short name: `bj`
+
+  The schema should include the following fields under `spec`:
+  - `schedule` (string)
+  - `retentionDays` (integer)
+
+  After creating the CRD, create one BackupJob resource named `daily-backup` in the `default` namespace with schedule `"0 2 * * *"` and retentionDays `30`.
+setup:
+  - "sleep 1"
+validation:
+  - description: "CRD exists"
+    command: "kubectl get crd backupjobs.backup.example.com -o jsonpath='{.metadata.name}'"
+    expect: "backupjobs.backup.example.com"
+    match: "exact"
+  - description: "CRD has correct group"
+    command: "kubectl get crd backupjobs.backup.example.com -o jsonpath='{.spec.group}'"
+    expect: "backup.example.com"
+    match: "exact"
+  - description: "BackupJob resource exists"
+    command: "kubectl get backupjob daily-backup -o jsonpath='{.metadata.name}'"
+    expect: "daily-backup"
+    match: "exact"
+  - description: "BackupJob has correct schedule"
+    command: "kubectl get backupjob daily-backup -o jsonpath='{.spec.schedule}'"
+    expect: "0 2 * * *"
+    match: "exact"
+hint: |
+  1. Create the CRD YAML with apiVersion `apiextensions.k8s.io/v1`
+  2. Define the schema with `openAPIV3Schema` under `versions[0].schema`
+  3. Apply the CRD first, then create a CR instance
+  4. The CR uses `apiVersion: backup.example.com/v1` and `kind: BackupJob`
+solution: |
+  # Step 1: Create the CRD
+  kubectl apply -f - <<EOF
+  apiVersion: apiextensions.k8s.io/v1
+  kind: CustomResourceDefinition
+  metadata:
+    name: backupjobs.backup.example.com
+  spec:
+    group: backup.example.com
+    versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                schedule:
+                  type: string
+                retentionDays:
+                  type: integer
+    scope: Namespaced
+    names:
+      plural: backupjobs
+      singular: backupjob
+      kind: BackupJob
+      shortNames:
+      - bj
+  EOF
+
+  # Step 2: Create a BackupJob resource
+  kubectl apply -f - <<EOF
+  apiVersion: backup.example.com/v1
+  kind: BackupJob
+  metadata:
+    name: daily-backup
+  spec:
+    schedule: "0 2 * * *"
+    retentionDays: 30
+  EOF
+
+  # Step 3: Verify
+  kubectl get backupjobs
+  kubectl get bj daily-backup -o yaml

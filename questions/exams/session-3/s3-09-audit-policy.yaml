@@ -1,0 +1,62 @@
+id: "s3-09-audit-policy"
+title: "API Server Audit Policy Configuration"
+category: "security"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster1"
+task: |
+  Create an audit policy file at `/etc/kubernetes/audit-policy.yaml` inside the control-plane node.
+
+  The policy should log Metadata level events for all requests related to pods (resources containing "pod" in the name).
+
+  Ensure the file exists and is properly formatted as a valid Kubernetes audit policy.
+setup: []
+validation:
+  - description: "Audit policy file exists in control-plane"
+    command: "docker exec cka-s3-cluster1-control-plane ls -l /etc/kubernetes/audit-policy.yaml"
+    expect: "audit-policy.yaml"
+    match: "contains"
+  - description: "File contains Metadata level"
+    command: "docker exec cka-s3-cluster1-control-plane cat /etc/kubernetes/audit-policy.yaml"
+    expect: "level: Metadata"
+    match: "contains"
+  - description: "File contains apiVersion"
+    command: "docker exec cka-s3-cluster1-control-plane cat /etc/kubernetes/audit-policy.yaml"
+    expect: "apiVersion: audit.k8s.io/v1"
+    match: "contains"
+hint: |
+  SSH into the control-plane node and create a YAML file with audit rules.
+
+  A basic audit policy structure should include:
+  - apiVersion: audit.k8s.io/v1
+  - kind: Policy
+  - rules with level: Metadata for pods
+  - A catch-all rule at the end with level: None
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s3-cluster1-control-plane
+
+  # Create the audit policy file
+  cat > /etc/kubernetes/audit-policy.yaml << 'ENDPOLICY'
+  apiVersion: audit.k8s.io/v1
+  kind: Policy
+  rules:
+    - level: Metadata
+      resources:
+        - group: ""
+          resources: ["pods"]
+      verbs: ["*"]
+    - level: Metadata
+      resources:
+        - group: ""
+          resources: ["pods/logs"]
+      verbs: ["get", "create", "delete"]
+    - level: None
+      verbs: ["watch", "list"]
+  ENDPOLICY
+
+  # Verify the file
+  cat /etc/kubernetes/audit-policy.yaml
+
+  # Exit the node
+  exit

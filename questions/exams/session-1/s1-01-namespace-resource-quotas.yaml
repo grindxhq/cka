@@ -1,0 +1,58 @@
+id: "s1-01-namespace-resource-quotas"
+title: "Namespace and Resource Quotas"
+category: "Core Concepts"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster1"
+
+task: |
+  Create a namespace named `dev-team` with a ResourceQuota named `dev-team-quota` that enforces the following limits:
+  - **Maximum 10 pods**
+  - **Maximum 4 CPU requests** (in total across all pods)
+  - **Maximum 8Gi memory requests** (in total across all pods)
+  - **Maximum 20Gi storage requests** (in total across all pods)
+
+  Verify the ResourceQuota is properly applied.
+
+setup: []
+
+validation:
+  - description: "Namespace dev-team exists"
+    command: "kubectl get namespace dev-team -o jsonpath='{.metadata.name}'"
+    expect: "dev-team"
+    match: "exact"
+  - description: "ResourceQuota dev-team-quota exists in dev-team"
+    command: "kubectl get resourcequota dev-team-quota -n dev-team -o jsonpath='{.metadata.name}'"
+    expect: "dev-team-quota"
+    match: "exact"
+  - description: "Pod limit is 10"
+    command: "kubectl get resourcequota dev-team-quota -n dev-team -o jsonpath='{.spec.hard.pods}'"
+    expect: "10"
+    match: "exact"
+  - description: "CPU request limit is 4"
+    command: "kubectl get resourcequota dev-team-quota -n dev-team -o jsonpath='{.spec.hard.requests\\.cpu}'"
+    expect: "4"
+    match: "exact"
+  - description: "Memory request limit is 8Gi"
+    command: "kubectl get resourcequota dev-team-quota -n dev-team -o jsonpath='{.spec.hard.requests\\.memory}'"
+    expect: "8Gi"
+    match: "exact"
+  - description: "Storage request limit is 20Gi"
+    command: "kubectl get resourcequota dev-team-quota -n dev-team -o jsonpath='{.spec.hard.requests\\.storage}'"
+    expect: "20Gi"
+    match: "exact"
+
+hint: |
+  Use `kubectl create namespace dev-team` to create the namespace.
+  Then create a ResourceQuota manifest with `spec.hard` containing pods, requests.cpu, requests.memory, and requests.storage limits.
+  Apply it with `kubectl apply -f` or use `kubectl create resourcequota` command with the `--hard` flag.
+
+solution: |
+  kubectl create namespace dev-team
+
+  kubectl create resourcequota dev-team-quota \
+    --namespace=dev-team \
+    --hard=pods=10,requests.cpu=4,requests.memory=8Gi,requests.storage=20Gi
+
+  # Verify:
+  kubectl describe resourcequota dev-team-quota -n dev-team

@@ -1,0 +1,39 @@
+id: "s3-01-etcd-backup"
+title: "etcd Backup Creation"
+category: "etcd"
+difficulty: "medium"
+weight: 8
+context: "kind-cka-s3-cluster1"
+task: |
+  Create an etcd snapshot backup and save it at `/backup/etcd-snapshot.db` inside the control-plane node of the cluster.
+
+  Use the correct certificates and endpoints for etcd communication.
+setup:
+  - "docker exec cka-s3-cluster1-control-plane mkdir -p /backup"
+  - "docker exec cka-s3-cluster1-control-plane bash -c 'command -v etcdctl >/dev/null 2>&1 || { ETCD_VER=v3.5.12 && ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl; }'"
+validation:
+  - description: "Backup file exists in control-plane"
+    command: "docker exec cka-s3-cluster1-control-plane ls -lh /backup/etcd-snapshot.db"
+    expect: "etcd-snapshot.db"
+    match: "contains"
+  - description: "Backup file is non-empty"
+    command: "docker exec cka-s3-cluster1-control-plane stat /backup/etcd-snapshot.db | grep Size"
+    expect: "Size"
+    match: "contains"
+hint: |
+  SSH into the control-plane node and use ETCDCTL_API=3 with etcdctl snapshot save.
+
+  You need:
+  - ETCD_CERT_FILE=/etc/kubernetes/pki/etcd/server.crt
+  - ETCD_KEY_FILE=/etc/kubernetes/pki/etcd/server.key
+  - ETCD_CACERT_FILE=/etc/kubernetes/pki/etcd/ca.crt
+  - ETCD_ENDPOINTS=https://127.0.0.1:2379
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s3-cluster1-control-plane
+
+  # Create the backup
+  ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --endpoints=https://127.0.0.1:2379 snapshot save /backup/etcd-snapshot.db
+
+  # Exit the node
+  exit

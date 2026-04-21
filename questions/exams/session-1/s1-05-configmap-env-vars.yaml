@@ -1,0 +1,78 @@
+id: "s1-05-configmap-env-vars"
+title: "ConfigMap and Environment Variables"
+category: "Core Concepts"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster2"
+
+task: |
+  Create a ConfigMap named `app-config` with the following key-value pairs:
+  - APP_ENV=production
+  - LOG_LEVEL=info
+  - MAX_CONNECTIONS=100
+
+  Then create a Pod named `config-consumer` with:
+  - **Image:** nginx:1.24
+  - **Load all ConfigMap values as environment variables**
+
+  Verify the Pod can access all environment variables from the ConfigMap.
+
+setup: []
+
+validation:
+  - description: "ConfigMap app-config exists"
+    command: "kubectl get configmap app-config -o jsonpath='{.metadata.name}'"
+    expect: "app-config"
+    match: "exact"
+  - description: "ConfigMap has APP_ENV=production"
+    command: "kubectl get configmap app-config -o jsonpath='{.data.APP_ENV}'"
+    expect: "production"
+    match: "exact"
+  - description: "ConfigMap has LOG_LEVEL=info"
+    command: "kubectl get configmap app-config -o jsonpath='{.data.LOG_LEVEL}'"
+    expect: "info"
+    match: "exact"
+  - description: "ConfigMap has MAX_CONNECTIONS=100"
+    command: "kubectl get configmap app-config -o jsonpath='{.data.MAX_CONNECTIONS}'"
+    expect: "100"
+    match: "exact"
+  - description: "Pod config-consumer exists"
+    command: "kubectl get pod config-consumer -o jsonpath='{.metadata.name}'"
+    expect: "config-consumer"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod config-consumer -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Pod uses envFrom"
+    command: "kubectl get pod config-consumer -o jsonpath='{.spec.containers[0].envFrom[0].configMapRef.name}'"
+    expect: "app-config"
+    match: "exact"
+
+hint: |
+  Create a ConfigMap with kubectl create configmap app-config --from-literal=APP_ENV=production --from-literal=LOG_LEVEL=info --from-literal=MAX_CONNECTIONS=100
+  Create a Pod manifest with spec.containers[0].envFrom[0].configMapRef.name set to app-config.
+  This loads all ConfigMap keys as environment variables.
+
+solution: |
+  kubectl create configmap app-config \
+    --from-literal=APP_ENV=production \
+    --from-literal=LOG_LEVEL=info \
+    --from-literal=MAX_CONNECTIONS=100
+
+  cat > config-consumer.yaml << 'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: config-consumer
+  spec:
+    containers:
+    - name: app
+      image: nginx:1.24
+      envFrom:
+      - configMapRef:
+          name: app-config
+  EOF
+
+  kubectl apply -f config-consumer.yaml
+  kubectl get pod config-consumer

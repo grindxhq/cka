@@ -1,0 +1,51 @@
+id: "s4-02-etcd-backup"
+title: "etcd Backup Under Pressure"
+category: "Backup & Recovery"
+difficulty: "medium"
+weight: 8
+context: "kind-cka-s4-cluster1"
+task: |
+  You need to create an emergency backup of the etcd database to `/backup/emergency-snapshot.db` on the control-plane node.
+
+  After creating the backup, verify its integrity using `etcdctl snapshot status`.
+
+  Requirements:
+  - Backup must be saved to /backup/emergency-snapshot.db
+  - Backup must be verifiable with etcdctl
+setup:
+  - "docker exec cka-s4-cluster1-control-plane mkdir -p /backup"
+  - "docker exec cka-s4-cluster1-control-plane bash -c 'if ! command -v etcdctl >/dev/null 2>&1; then ETCD_VER=v3.5.12; ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/); curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl 2>/dev/null; fi; command -v etcdctl >/dev/null 2>&1 || echo etcdctl-not-found'"
+validation:
+  - description: "Backup file exists"
+    command: "docker exec cka-s4-cluster1-control-plane test -f /backup/emergency-snapshot.db && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Backup is valid (non-empty snapshot)"
+    command: "docker exec cka-s4-cluster1-control-plane sh -c 'test -s /backup/emergency-snapshot.db && echo valid || echo empty'"
+    expect: "valid"
+    match: "exact"
+hint: |
+  1. SSH into the control-plane node to interact with etcd
+  2. Use etcdctl to create a snapshot of the etcd database
+  3. Ensure proper certificates and endpoints are used for etcdctl
+  4. Verify the snapshot file exists and is valid
+  5. Use etcdctl snapshot status to validate the backup
+solution: |
+  # Step 1: SSH into control-plane node
+  ssh cka-s4-cluster1-control-plane
+
+  # Step 2: Set up etcdctl environment variables
+  export ETCDCTL_API=3
+  export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
+  export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/server.crt
+  export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key
+  export ETCDCTL_ENDPOINTS=127.0.0.1:2379
+
+  # Step 3: Create the backup
+  etcdctl snapshot save /backup/emergency-snapshot.db
+
+  # Step 4: Verify the backup
+  etcdctl snapshot status /backup/emergency-snapshot.db
+
+  # Step 5: Exit the node
+  exit

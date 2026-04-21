@@ -1,0 +1,215 @@
+id: "s4-18-multi-tenant-isolation"
+title: "Multi-Tenant Namespace Isolation"
+category: "Multi-Tenancy & Isolation"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  You need to create a multi-tenant cluster setup with proper isolation for three environments: dev, staging, and prod.
+
+  Your task is to:
+  1. Create three namespaces: "dev", "staging", "prod"
+  2. Apply ResourceQuota to each namespace:
+     - dev: 500Mi memory, 400m cpu
+     - staging: 1Gi memory, 800m cpu
+     - prod: 2Gi memory, 1.5 cpu
+  3. Create LimitRange for each namespace:
+     - max memory: 256Mi, max cpu: 500m
+     - min memory: 32Mi, min cpu: 50m
+  4. Create NetworkPolicies in each namespace:
+     - Deny all traffic by default
+     - Allow traffic from pods within the same namespace
+  5. Verify all namespaces are properly isolated
+
+  This ensures proper resource management and network isolation between tenants.
+setup:
+  - "sleep 1"
+validation:
+  - description: "dev namespace exists"
+    command: "kubectl get namespace dev -o jsonpath='{.metadata.name}'"
+    expect: "dev"
+    match: "exact"
+  - description: "staging namespace exists"
+    command: "kubectl get namespace staging -o jsonpath='{.metadata.name}'"
+    expect: "staging"
+    match: "exact"
+  - description: "prod namespace exists"
+    command: "kubectl get namespace prod -o jsonpath='{.metadata.name}'"
+    expect: "prod"
+    match: "exact"
+  - description: "ResourceQuota in dev namespace"
+    command: "kubectl get resourcequota -n dev -o jsonpath='{.items[0].metadata.name}'"
+    expect: "dev-quota"
+    match: "exact"
+  - description: "LimitRange in staging namespace"
+    command: "kubectl get limitrange -n staging -o jsonpath='{.items[0].metadata.name}'"
+    expect: "staging-limits"
+    match: "exact"
+  - description: "NetworkPolicy in prod namespace"
+    command: "kubectl get networkpolicy -n prod -o jsonpath='{.items[0].metadata.name}'"
+    expect: "prod-network-policy"
+    match: "exact"
+hint: |
+  1. Create three namespaces: `kubectl create namespace dev/staging/prod`
+  2. Create ResourceQuotas for each namespace
+  3. Create LimitRanges for each namespace
+  4. Create NetworkPolicies for isolation
+  5. Verify all resources exist with proper configurations
+solution: |
+  # Step 1: Create namespaces
+  kubectl create namespace dev
+  kubectl create namespace staging
+  kubectl create namespace prod
+
+  # Step 2: Create ResourceQuota for dev
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: dev-quota
+    namespace: dev
+  spec:
+    hard:
+      requests.memory: "500Mi"
+      requests.cpu: "400m"
+      limits.memory: "500Mi"
+      limits.cpu: "400m"
+  EOF
+
+  # Step 3: Create ResourceQuota for staging
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: staging-quota
+    namespace: staging
+  spec:
+    hard:
+      requests.memory: "1Gi"
+      requests.cpu: "800m"
+      limits.memory: "1Gi"
+      limits.cpu: "800m"
+  EOF
+
+  # Step 4: Create ResourceQuota for prod
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: prod-quota
+    namespace: prod
+  spec:
+    hard:
+      requests.memory: "2Gi"
+      requests.cpu: "1500m"
+      limits.memory: "2Gi"
+      limits.cpu: "1500m"
+  EOF
+
+  # Step 5: Create LimitRange for dev
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: dev-limits
+    namespace: dev
+  spec:
+    limits:
+      - max:
+          memory: "256Mi"
+          cpu: "500m"
+        min:
+          memory: "32Mi"
+          cpu: "50m"
+        type: Container
+  EOF
+
+  # Step 6: Create LimitRange for staging
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: staging-limits
+    namespace: staging
+  spec:
+    limits:
+      - max:
+          memory: "256Mi"
+          cpu: "500m"
+        min:
+          memory: "32Mi"
+          cpu: "50m"
+        type: Container
+  EOF
+
+  # Step 7: Create LimitRange for prod
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: prod-limits
+    namespace: prod
+  spec:
+    limits:
+      - max:
+          memory: "256Mi"
+          cpu: "500m"
+        min:
+          memory: "32Mi"
+          cpu: "50m"
+        type: Container
+  EOF
+
+  # Step 8: Create NetworkPolicy for dev
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: dev-network-policy
+    namespace: dev
+  spec:
+    podSelector: {}
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - podSelector: {}
+  EOF
+
+  # Step 9: Create NetworkPolicy for staging
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: staging-network-policy
+    namespace: staging
+  spec:
+    podSelector: {}
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - podSelector: {}
+  EOF
+
+  # Step 10: Create NetworkPolicy for prod
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: prod-network-policy
+    namespace: prod
+  spec:
+    podSelector: {}
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - podSelector: {}
+  EOF
+
+  # Step 11: Verify all namespaces
+  kubectl get namespaces
+  kubectl get resourcequota -n dev
+  kubectl get limitrange -n staging
+  kubectl get networkpolicy -n prod

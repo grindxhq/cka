@@ -1,0 +1,16 @@
+id: "session-5"
+name: "Session 5: Cluster Architecture & Administration"
+description: "16 tasks covering cluster-level operations: kubeadm, certificates, kubelet, static pods, CRDs, JSON path queries, and cluster administration — the 25% of CKA most practice exams miss."
+duration: 7200
+difficulty: "advanced"
+passScore: 66
+tags: ["cluster-architecture", "administration", "certificates", "kubeadm"]
+clusters:
+  - name: cka-s5-cluster1
+    controlPlane: 1
+    workers: 2
+    nodes: 3
+  - name: cka-s5-cluster2
+    controlPlane: 1
+    workers: 1
+    nodes: 2

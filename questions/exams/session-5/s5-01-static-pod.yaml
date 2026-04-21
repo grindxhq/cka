@@ -1,0 +1,53 @@
+id: "s5-01-static-pod"
+title: "Create a Static Pod"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s5-cluster1"
+task: |
+  Create a static pod named `static-web` on the control-plane node using the `nginx:1.24` image.
+
+  The static pod manifest should be placed in the static pod manifest directory on the control-plane node.
+
+  Verify the static pod appears in `kubectl get pods` output.
+setup:
+  - "sleep 1"
+validation:
+  - description: "Static pod is running"
+    command: "kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}{end}' | grep static-web"
+    expect: "static-web"
+    match: "contains"
+  - description: "Static pod uses nginx image"
+    command: "kubectl get pod -A -o jsonpath='{range .items[*]}{.metadata.name} {.spec.containers[0].image}{\"\\n\"}{end}' | grep static-web"
+    expect: "nginx"
+    match: "contains"
+hint: |
+  1. Find the static pod manifest directory: check kubelet config for `staticPodPath`
+  2. On Kind nodes, static pod manifests go in `/etc/kubernetes/manifests/`
+  3. Create a pod manifest YAML file in that directory
+  4. The kubelet will automatically create the pod
+
+  Access the node: `ssh cka-s5-cluster1-control-plane`
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster1-control-plane
+
+  # Create the static pod manifest
+  cat <<EOF > /etc/kubernetes/manifests/static-web.yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: static-web
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:1.24
+  EOF
+
+  # Exit the node
+  exit
+
+  # Wait for kubelet to pick up the static pod
+  sleep 10
+  kubectl wait --for=condition=Ready pod -l component=static-web -A --timeout=60s || true
+  kubectl get pods -A | grep static-web

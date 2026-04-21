@@ -1,0 +1,102 @@
+id: "s1-13-probes"
+title: "Liveness and Readiness Probes"
+category: "Core Concepts"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s1-cluster3"
+
+task: |
+  Create a Pod named `healthy-app` with the following health checks:
+  - **Image:** nginx:1.24
+  - **Liveness Probe:**
+    - **Type:** HTTP GET
+    - **Port:** 80
+    - **Path:** /
+    - **Initial Delay:** 15 seconds
+    - **Period:** 10 seconds
+  - **Readiness Probe:**
+    - **Type:** HTTP GET
+    - **Port:** 80
+    - **Path:** /
+    - **Initial Delay:** 5 seconds
+    - **Period:** 5 seconds
+
+  Verify the Pod has both probes configured and is running.
+
+setup: []
+
+validation:
+  - description: "Pod healthy-app exists"
+    command: "kubectl get pod healthy-app -o jsonpath='{.metadata.name}'"
+    expect: "healthy-app"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod healthy-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Liveness probe port is 80"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].livenessProbe.httpGet.port}'"
+    expect: "80"
+    match: "exact"
+  - description: "Liveness probe path is /"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].livenessProbe.httpGet.path}'"
+    expect: "/"
+    match: "exact"
+  - description: "Liveness probe initialDelaySeconds is 15"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].livenessProbe.initialDelaySeconds}'"
+    expect: "15"
+    match: "exact"
+  - description: "Liveness probe periodSeconds is 10"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].livenessProbe.periodSeconds}'"
+    expect: "10"
+    match: "exact"
+  - description: "Readiness probe port is 80"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].readinessProbe.httpGet.port}'"
+    expect: "80"
+    match: "exact"
+  - description: "Readiness probe path is /"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].readinessProbe.httpGet.path}'"
+    expect: "/"
+    match: "exact"
+  - description: "Readiness probe initialDelaySeconds is 5"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].readinessProbe.initialDelaySeconds}'"
+    expect: "5"
+    match: "exact"
+  - description: "Readiness probe periodSeconds is 5"
+    command: "kubectl get pod healthy-app -o jsonpath='{.spec.containers[0].readinessProbe.periodSeconds}'"
+    expect: "5"
+    match: "exact"
+
+hint: |
+  Create a Pod manifest with containers[0].livenessProbe and readinessProbe.
+  Both use httpGet with port: 80 and path: /
+  Configure initialDelaySeconds and periodSeconds for each probe.
+  Liveness probes restart failed containers; readiness probes affect traffic routing.
+
+solution: |
+  cat > healthy-app.yaml << 'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: healthy-app
+  spec:
+    containers:
+    - name: app
+      image: nginx:1.24
+      livenessProbe:
+        httpGet:
+          port: 80
+          path: /
+        initialDelaySeconds: 15
+        periodSeconds: 10
+      readinessProbe:
+        httpGet:
+          port: 80
+          path: /
+        initialDelaySeconds: 5
+        periodSeconds: 5
+  EOF
+
+  kubectl apply -f healthy-app.yaml
+  kubectl get pod healthy-app
+  kubectl describe pod healthy-app

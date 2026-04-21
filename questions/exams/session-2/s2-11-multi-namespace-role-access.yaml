@@ -1,0 +1,120 @@
+id: "s2-11-multi-namespace-role-access"
+title: "Multi-Namespace Role Access"
+category: "RBAC"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a ServiceAccount named `multi-ns-reader` in the `default` namespace.
+
+  Create two namespaces: `dev` and `prod`.
+
+  Create a Role named `pod-reader` in the `dev` namespace with permissions to:
+  - get pods
+  - list pods
+
+  Create a Role named `pod-reader` in the `prod` namespace with the same permissions.
+
+  Create RoleBindings in both namespaces that grant the `multi-ns-reader` ServiceAccount access to these roles.
+setup: []
+validation:
+  - description: "ServiceAccount multi-ns-reader exists in default"
+    command: "kubectl get sa multi-ns-reader -o jsonpath='{.metadata.name}'"
+    expect: "multi-ns-reader"
+    match: "exact"
+  - description: "Namespace dev exists"
+    command: "kubectl get namespace dev -o jsonpath='{.metadata.name}'"
+    expect: "dev"
+    match: "exact"
+  - description: "Namespace prod exists"
+    command: "kubectl get namespace prod -o jsonpath='{.metadata.name}'"
+    expect: "prod"
+    match: "exact"
+  - description: "Role pod-reader exists in dev"
+    command: "kubectl get role pod-reader -n dev -o jsonpath='{.metadata.name}'"
+    expect: "pod-reader"
+    match: "exact"
+  - description: "Role pod-reader exists in prod"
+    command: "kubectl get role pod-reader -n prod -o jsonpath='{.metadata.name}'"
+    expect: "pod-reader"
+    match: "exact"
+  - description: "RoleBinding exists in dev"
+    command: "kubectl get rolebinding -n dev -o jsonpath='{.items[0].roleRef.name}' | grep -c pod-reader"
+    expect: "1"
+    match: "contains"
+  - description: "RoleBinding exists in prod"
+    command: "kubectl get rolebinding -n prod -o jsonpath='{.items[0].roleRef.name}' | grep -c pod-reader"
+    expect: "1"
+    match: "contains"
+hint: |
+  - ServiceAccount is in default, but can be referenced from other namespaces
+  - Create separate Roles in each namespace with same name
+  - RoleBindings reference the ServiceAccount with namespace
+  - The subjects in RoleBindings should point to the ServiceAccount in default namespace
+solution: |
+  # Create ServiceAccount in default
+  kubectl create serviceaccount multi-ns-reader
+
+  # Create namespaces
+  kubectl create namespace dev
+  kubectl create namespace prod
+
+  # Create Role in dev
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: pod-reader
+    namespace: dev
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  EOF
+
+  # Create Role in prod
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: pod-reader
+    namespace: prod
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  EOF
+
+  # Create RoleBinding in dev
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: multi-ns-reader-binding
+    namespace: dev
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: pod-reader
+  subjects:
+  - kind: ServiceAccount
+    name: multi-ns-reader
+    namespace: default
+  EOF
+
+  # Create RoleBinding in prod
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: multi-ns-reader-binding
+    namespace: prod
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: pod-reader
+  subjects:
+  - kind: ServiceAccount
+    name: multi-ns-reader
+    namespace: default
+  EOF

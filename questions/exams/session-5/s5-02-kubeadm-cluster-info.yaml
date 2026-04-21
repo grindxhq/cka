@@ -1,0 +1,43 @@
+id: "s5-02-kubeadm-cluster-info"
+title: "Inspect Cluster with kubeadm"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s5-cluster1"
+task: |
+  Use `kubeadm` to inspect the current cluster configuration on the control-plane node.
+
+  Save the cluster configuration (ClusterConfiguration) to `/tmp/cluster-config.yaml` on the control-plane node.
+
+  Then, identify the Kubernetes version and the cluster's service subnet from the saved configuration.
+setup:
+  - "sleep 1"
+validation:
+  - description: "Cluster config file exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /tmp/cluster-config.yaml && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Config contains kubernetesVersion"
+    command: "docker exec cka-s5-cluster1-control-plane grep 'kubernetesVersion' /tmp/cluster-config.yaml"
+    expect: "kubernetesVersion"
+    match: "contains"
+  - description: "Config contains serviceSubnet"
+    command: "docker exec cka-s5-cluster1-control-plane grep 'serviceSubnet' /tmp/cluster-config.yaml"
+    expect: "serviceSubnet"
+    match: "contains"
+hint: |
+  1. Access the control-plane node: `ssh cka-s5-cluster1-control-plane`
+  2. Use `kubectl get cm kubeadm-config -n kube-system -o jsonpath='{.data.ClusterConfiguration}'` to extract the cluster config
+  3. Save the output to the required file path
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster1-control-plane
+
+  # Extract and save the cluster configuration
+  kubectl get cm kubeadm-config -n kube-system -o jsonpath="{.data.ClusterConfiguration}" > /tmp/cluster-config.yaml
+
+  # Verify the file
+  cat /tmp/cluster-config.yaml
+
+  # Exit the node
+  exit

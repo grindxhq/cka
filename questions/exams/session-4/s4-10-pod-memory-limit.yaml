@@ -1,0 +1,51 @@
+id: "s4-10-pod-memory-limit"
+title: "Pod Resource Limits Too Low"
+category: "Resource Management"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s4-cluster1"
+task: |
+  A deployment has been created with extremely low memory limits (16Mi), causing pods to crash with OOMKilled errors.
+
+  Your task is to:
+  1. Identify the crashed pods and the OOMKilled status
+  2. Increase the memory limit to a reasonable value (at least 64Mi)
+  3. Verify the pods are running without crashes
+
+  The deployment name is "memory-hog" and needs sufficient memory to run properly.
+setup:
+  - "kubectl create deployment memory-hog --image=nginx -n default"
+  - "kubectl set resources deployment memory-hog -n default --limits=memory=16Mi,cpu=100m --requests=memory=16Mi,cpu=100m"
+  - "sleep 5"
+validation:
+  - description: "Deployment exists"
+    command: "kubectl get deployment memory-hog -n default -o jsonpath='{.metadata.name}'"
+    expect: "memory-hog"
+    match: "exact"
+  - description: "Pods are running"
+    command: "kubectl get pods -n default -l app=memory-hog -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | sort | uniq"
+    expect: "Running"
+    match: "exact"
+  - description: "Memory limit is increased"
+    command: "kubectl get deployment memory-hog -n default -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'"
+    expect: "64Mi|128Mi|256Mi|512Mi|1Gi"
+    match: "regex"
+hint: |
+  1. Check pod status: `kubectl get pods -n default`
+  2. Check pod events: `kubectl describe pod <pod-name> -n default`
+  3. Look for OOMKilled status
+  4. Update deployment memory limit: `kubectl set resources deployment memory-hog --limits=memory=128Mi`
+  5. Monitor pods until they stabilize
+solution: |
+  # Step 1: Check pod status and events
+  kubectl get pods -n default -l app=memory-hog
+
+  # Step 2: Check deployment resource limits
+  kubectl get deployment memory-hog -n default -o yaml
+
+  # Step 3: Increase memory limit
+  kubectl set resources deployment memory-hog -n default --limits=memory=128Mi --requests=memory=128Mi
+
+  # Step 4: Verify pods are running
+  kubectl get pods -n default -l app=memory-hog
+  kubectl rollout status deployment/memory-hog -n default

@@ -1,0 +1,53 @@
+id: "s4-12-service-discovery-port"
+title: "Service Discovery - Wrong Port"
+category: "Service & Networking"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  A deployment exposes port 80, but the service is configured to target port 8080 (incorrect).
+
+  Your task is to:
+  1. Identify the port mismatch between service and deployment
+  2. Fix the service targetPort to match the container port (80)
+  3. Verify service routing works correctly
+
+  The service is named "app-service" and the deployment is "app-deploy".
+setup:
+  - "kubectl create deployment app-deploy --image=nginx -n default"
+  - "kubectl expose deployment app-deploy --name=app-service --port=80 -n default"
+  - "kubectl patch service app-service -n default -p '{\"spec\":{\"ports\":[{\"port\":80,\"targetPort\":8080}]}}'"
+  - "sleep 2"
+validation:
+  - description: "Service exists"
+    command: "kubectl get service app-service -n default -o jsonpath='{.metadata.name}'"
+    expect: "app-service"
+    match: "exact"
+  - description: "Service targetPort matches container port"
+    command: "kubectl get service app-service -n default -o jsonpath='{.spec.ports[0].targetPort}'"
+    expect: "80"
+    match: "exact"
+  - description: "Service has endpoints"
+    command: "kubectl get endpointslices -l kubernetes.io/service-name=app-service -n default -o jsonpath='{.items[0].endpoints[*].addresses[0]}' 2>/dev/null | tr ' ' '\\n' | grep -c '.' || true"
+    expect: "^[1-9]"
+    match: "regex"
+hint: |
+  1. Check service definition: `kubectl get service app-service -n default -o yaml`
+  2. Check deployment port: `kubectl get deployment app-deploy -n default -o yaml`
+  3. Identify the port mismatch (targetPort 8080 vs container port 80)
+  4. Update service: `kubectl patch service app-service -n default -p '{\"spec\":{\"ports\":[{\"port\":80,\"targetPort\":80}]}}'`
+  5. Verify endpoints are healthy
+solution: |
+  # Step 1: Check service and deployment
+  kubectl get service app-service -n default -o yaml
+  kubectl get deployment app-deploy -n default -o yaml
+
+  # Step 2: Identify the port mismatch
+  # Service targetPort is 8080, but nginx container listens on 80
+
+  # Step 3: Fix the service port
+  kubectl patch service app-service -n default -p '{"spec":{"ports":[{"port":80,"targetPort":80}]}}'
+
+  # Step 4: Verify the fix
+  kubectl get service app-service -n default
+  kubectl get endpoints app-service -n default

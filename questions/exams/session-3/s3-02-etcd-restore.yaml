@@ -1,0 +1,38 @@
+id: "s3-02-etcd-restore"
+title: "etcd Snapshot Restore"
+category: "etcd"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s3-cluster1"
+task: |
+  An etcd backup exists at `/backup/etcd-pre-restore.db` inside the control-plane node.
+
+  Restore the snapshot to a new directory `/var/lib/etcd-restored` using etcdctl snapshot restore.
+
+  Verify the restored data directory exists and contains etcd database files.
+setup:
+  - "docker exec cka-s3-cluster1-control-plane bash -c 'command -v etcdctl >/dev/null 2>&1 || { ETCD_VER=v3.5.12 && ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl; }'"
+  - "docker exec cka-s3-cluster1-control-plane bash -c 'mkdir -p /backup && ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --endpoints=https://127.0.0.1:2379 snapshot save /backup/etcd-pre-restore.db'"
+validation:
+  - description: "Restored etcd directory exists"
+    command: "docker exec cka-s3-cluster1-control-plane ls -ld /var/lib/etcd-restored"
+    expect: "/var/lib/etcd-restored"
+    match: "contains"
+  - description: "Restored directory contains member data"
+    command: "docker exec cka-s3-cluster1-control-plane find /var/lib/etcd-restored -type d -name member"
+    expect: "member"
+    match: "contains"
+hint: |
+  SSH into the control-plane node and use ETCDCTL_API=3 etcdctl snapshot restore with the --data-dir flag.
+
+  The command to restore is:
+  etcdctl snapshot restore /backup/etcd-pre-restore.db --data-dir=/var/lib/etcd-restored
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s3-cluster1-control-plane
+
+  # Restore the snapshot
+  ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd-pre-restore.db --data-dir=/var/lib/etcd-restored
+
+  # Exit the node
+  exit

@@ -1,0 +1,45 @@
+id: "s3-13-pdb"
+title: "Create PodDisruptionBudget"
+category: "workloads"
+difficulty: "easy"
+weight: 5
+context: "kind-cka-s3-cluster1"
+task: |
+  Create a PodDisruptionBudget (PDB) named `webapp-pdb` in the default namespace with the following configuration:
+  - Applies to pods with label app=webapp
+  - Minimum available pods: 2
+
+  A deployment with label app=webapp should already exist. If not, create it first.
+setup:
+  - "kubectl -n default create deployment webapp --image=nginx:1.24 --replicas=3"
+validation:
+  - description: "PDB exists"
+    command: "kubectl -n default get pdb webapp-pdb"
+    expect: "webapp-pdb"
+    match: "contains"
+  - description: "minAvailable is 2"
+    command: "kubectl -n default get pdb webapp-pdb -o jsonpath='{.spec.minAvailable}'"
+    expect: "2"
+    match: "exact"
+  - description: "Selector matches app=webapp"
+    command: "kubectl -n default get pdb webapp-pdb -o yaml"
+    expect: "app: webapp"
+    match: "contains"
+hint: |
+  Create a PodDisruptionBudget with:
+  - metadata.name: webapp-pdb
+  - spec.minAvailable: 2
+  - spec.selector.matchLabels.app: webapp
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: policy/v1
+  kind: PodDisruptionBudget
+  metadata:
+    name: webapp-pdb
+    namespace: default
+  spec:
+    minAvailable: 2
+    selector:
+      matchLabels:
+        app: webapp
+  EOF

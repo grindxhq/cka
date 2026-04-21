@@ -1,0 +1,88 @@
+id: "s4-15-pod-security-standards"
+title: "Webhook Admission - Block Privileged Pods"
+category: "Security & Pod Security"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s4-cluster1"
+task: |
+  A namespace needs to enforce Pod Security Standards to prevent privileged and unsafe containers.
+
+  Your task is to:
+  1. Create a namespace "restricted-ns" with restricted pod security policy
+  2. Create a pod that complies with restricted security standards:
+     - Does not run as root
+     - Does not use hostNetwork
+     - Drops all capabilities
+     - Uses readOnlyRootFilesystem
+  3. Verify the pod is running in the restricted namespace
+
+  Pod name: "secure-app"
+  Image: "nginx:latest"
+setup:
+  - "kubectl create namespace restricted-ns"
+  - "kubectl label namespace restricted-ns pod-security.kubernetes.io/enforce=restricted"
+  - "sleep 1"
+validation:
+  - description: "Namespace restricted-ns exists"
+    command: "kubectl get namespace restricted-ns -o jsonpath='{.metadata.name}'"
+    expect: "restricted-ns"
+    match: "exact"
+  - description: "Pod secure-app exists"
+    command: "kubectl get pod secure-app -n restricted-ns -o jsonpath='{.metadata.name}'"
+    expect: "secure-app"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod secure-app -n restricted-ns -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Pod has security context"
+    command: "kubectl get pod secure-app -n restricted-ns -o jsonpath='{.spec.containers[0].securityContext.runAsNonRoot}'"
+    expect: "true"
+    match: "exact"
+hint: |
+  1. Create namespace with restricted label: `kubectl label namespace restricted-ns pod-security.kubernetes.io/enforce=restricted`
+  2. Create pod with proper securityContext:
+     - runAsNonRoot: true
+     - runAsUser: 1000
+     - allowPrivilegeEscalation: false
+     - readOnlyRootFilesystem: true
+     - capabilities: drop: ["ALL"]
+  3. Verify pod is compliant and running
+solution: |
+  # Step 1: Create namespace
+  kubectl create namespace restricted-ns
+
+  # Step 2: Label namespace with restricted pod security policy
+  kubectl label namespace restricted-ns pod-security.kubernetes.io/enforce=restricted
+
+  # Step 3: Create secure pod
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: secure-app
+    namespace: restricted-ns
+  spec:
+    containers:
+      - name: app
+        image: nginx:latest
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+    securityContext:
+      fsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  EOF
+
+  # Step 4: Verify pod is running
+  kubectl get pod secure-app -n restricted-ns
+  kubectl describe pod secure-app -n restricted-ns

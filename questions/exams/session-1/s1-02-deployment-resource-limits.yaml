@@ -1,0 +1,104 @@
+id: "s1-02-deployment-resource-limits"
+title: "Deployment with Resource Limits"
+category: "Workloads"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster1"
+
+task: |
+  Create a Deployment named `webapp` with the following specifications:
+  - **Image:** nginx:1.24
+  - **Replicas:** 3
+  - **Labels:** app=webapp, tier=frontend
+  - **CPU request:** 100m, **limit:** 200m
+  - **Memory request:** 128Mi, **limit:** 256Mi
+
+  Verify the Deployment is running with correct resource specifications.
+
+setup: []
+
+validation:
+  - description: "Deployment webapp exists"
+    command: "kubectl get deployment webapp -o jsonpath='{.metadata.name}'"
+    expect: "webapp"
+    match: "exact"
+  - description: "Replicas is 3"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.replicas}'"
+    expect: "3"
+    match: "exact"
+  - description: "Image is nginx:1.24"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "nginx:1.24"
+    match: "exact"
+  - description: "CPU request is 100m"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].resources.requests.cpu}'"
+    expect: "100m"
+    match: "exact"
+  - description: "CPU limit is 200m"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].resources.limits.cpu}'"
+    expect: "200m"
+    match: "exact"
+  - description: "Memory request is 128Mi"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].resources.requests.memory}'"
+    expect: "128Mi"
+    match: "exact"
+  - description: "Memory limit is 256Mi"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'"
+    expect: "256Mi"
+    match: "exact"
+  - description: "Pod has label app=webapp"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.metadata.labels.app}'"
+    expect: "webapp"
+    match: "exact"
+  - description: "Pod has label tier=frontend"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.metadata.labels.tier}'"
+    expect: "frontend"
+    match: "exact"
+
+hint: |
+  Create a Deployment manifest with spec.replicas=3.
+  In the container spec, set image to nginx:1.24.
+  Add resources.requests (cpu and memory) and resources.limits.
+  Include labels at both metadata.labels and spec.template.metadata.labels.
+
+solution: |
+  kubectl create deployment webapp \
+    --image=nginx:1.24 \
+    --replicas=3 \
+    --dry-run=client -o yaml | \
+    kubectl set resources deployment webapp \
+    --requests=cpu=100m,memory=128Mi \
+    --limits=cpu=200m,memory=256Mi \
+    --dry-run=client -o yaml > webapp-deploy.yaml
+
+  # Or create manually:
+  cat > webapp-deploy.yaml << 'EOF'
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: webapp
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: webapp
+    template:
+      metadata:
+        labels:
+          app: webapp
+          tier: frontend
+      spec:
+        containers:
+        - name: webapp
+          image: nginx:1.24
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+  EOF
+
+  kubectl apply -f webapp-deploy.yaml
+  kubectl get deployment webapp

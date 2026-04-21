@@ -1,0 +1,82 @@
+id: "s3-05-networkpolicy"
+title: "Complex NetworkPolicy Configuration"
+category: "networking"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s3-cluster2"
+task: |
+  Create a NetworkPolicy named `db-policy` in the default namespace that:
+  - Applies to pods with label app=database
+  - Allows ingress traffic from pods with label app=backend on port 5432 (TCP)
+  - Allows egress traffic to pods with label app=logging on port 514 (UDP)
+  - Allows egress traffic for DNS (port 53, both TCP and UDP)
+
+  Before creating the policy, set up test pods with the appropriate labels to verify the policy works.
+setup:
+  - "kubectl -n default run db-pod --image=nginx:1.24 --labels=app=database -- sleep 3600"
+  - "kubectl -n default run backend-pod --image=nginx:1.24 --labels=app=backend -- sleep 3600"
+validation:
+  - description: "NetworkPolicy exists"
+    command: "kubectl -n default get networkpolicy db-policy"
+    expect: "db-policy"
+    match: "contains"
+  - description: "Ingress rule configured"
+    command: "kubectl -n default get networkpolicy db-policy -o yaml"
+    expect: "app: backend"
+    match: "contains"
+  - description: "Port 5432 in ingress"
+    command: "kubectl -n default get networkpolicy db-policy -o yaml"
+    expect: "5432"
+    match: "contains"
+  - description: "Egress rule for logging"
+    command: "kubectl -n default get networkpolicy db-policy -o yaml"
+    expect: "app: logging"
+    match: "contains"
+  - description: "DNS egress configured"
+    command: "kubectl -n default get networkpolicy db-policy -o yaml"
+    expect: "53"
+    match: "contains"
+hint: |
+  Create a NetworkPolicy with:
+  - podSelector matching app=database
+  - Ingress rules with namespaceSelector or podSelector for app=backend
+  - Egress rules for app=logging and DNS ports 53
+  - Type field should include "Ingress" and "Egress"
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: db-policy
+    namespace: default
+  spec:
+    podSelector:
+      matchLabels:
+        app: database
+    policyTypes:
+      - Ingress
+      - Egress
+    ingress:
+      - from:
+          - podSelector:
+              matchLabels:
+                app: backend
+        ports:
+          - protocol: TCP
+            port: 5432
+    egress:
+      - to:
+          - podSelector:
+              matchLabels:
+                app: logging
+        ports:
+          - protocol: UDP
+            port: 514
+      - to:
+          - podSelector: {}
+        ports:
+          - protocol: TCP
+            port: 53
+          - protocol: UDP
+            port: 53
+  EOF

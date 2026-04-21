@@ -1,0 +1,65 @@
+id: "s4-16-cluster-performance"
+title: "Cluster Performance - Find Resource Hogs"
+category: "Resource Management"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s4-cluster1"
+task: |
+  Multiple deployments have been created with varying resource requests.
+
+  Your task is to:
+  1. Identify which deployments use the most resources
+  2. Set proper resource limits on all deployments (no limit should exceed 256Mi memory)
+  3. Ensure all pods have both requests and limits defined
+  4. Verify all deployments have resource constraints
+
+  Deployments to manage:
+  - "app-light" - currently no limits
+  - "app-medium" - currently no limits
+  - "app-heavy" - currently no limits
+setup:
+  - "kubectl create deployment app-light --image=nginx -n default"
+  - "kubectl create deployment app-medium --image=nginx --replicas=2 -n default"
+  - "kubectl create deployment app-heavy --image=nginx --replicas=3 -n default"
+  - "sleep 3"
+validation:
+  - description: "All deployments exist"
+    command: "kubectl get deployments -n default -o jsonpath='{.items[*].metadata.name}' | grep -c 'app-light'"
+    expect: "1"
+    match: "exact"
+  - description: "app-light has resource limits"
+    command: "kubectl get deployment app-light -n default -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'"
+    expect: "^[0-9]+[MG]i$|^[0-9]+m$"
+    match: "regex"
+  - description: "app-medium has resource limits"
+    command: "kubectl get deployment app-medium -n default -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'"
+    expect: "^[0-9]+[MG]i$|^[0-9]+m$"
+    match: "regex"
+  - description: "app-heavy has resource limits"
+    command: "kubectl get deployment app-heavy -n default -o jsonpath='{.spec.template.spec.containers[0].resources.limits.memory}'"
+    expect: "^[0-9]+[MG]i$|^[0-9]+m$"
+    match: "regex"
+hint: |
+  1. Check current resource usage: `kubectl top pods -n default`
+  2. Check deployments: `kubectl get deployments -n default`
+  3. Set resource limits on each: `kubectl set resources deployment <name> --limits=memory=128Mi,cpu=200m`
+  4. Set resource requests: `kubectl set resources deployment <name> --requests=memory=64Mi,cpu=100m`
+  5. Verify with: `kubectl describe deployment <name> -n default`
+solution: |
+  # Step 1: Check current deployments
+  kubectl get deployments -n default
+  kubectl top pods -n default 2>/dev/null || echo "metrics not available"
+
+  # Step 2: Set resource limits for app-light
+  kubectl set resources deployment app-light -n default --limits=memory=128Mi,cpu=200m --requests=memory=64Mi,cpu=100m
+
+  # Step 3: Set resource limits for app-medium
+  kubectl set resources deployment app-medium -n default --limits=memory=256Mi,cpu=300m --requests=memory=128Mi,cpu=150m
+
+  # Step 4: Set resource limits for app-heavy
+  kubectl set resources deployment app-heavy -n default --limits=memory=256Mi,cpu=400m --requests=memory=200Mi,cpu=200m
+
+  # Step 5: Verify all have limits
+  kubectl describe deployment app-light -n default
+  kubectl describe deployment app-medium -n default
+  kubectl describe deployment app-heavy -n default

@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+frontend/dist/
+build/bin/
+*.exe
+*.app
+*.dmg
+
+# Wails build
+build/darwin/
+build/windows/
+build/linux/
+
+# Binary
+cka-mock
+cka
+
+# Environment
+.env
+.env.local
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go
+vendor/
+
+# Temp
+tmp/
+*.log

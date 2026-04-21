@@ -1,0 +1,118 @@
+id: "s1-16-rbac"
+title: "ServiceAccount and RBAC"
+category: "RBAC"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s1-cluster4"
+
+task: |
+  Create a ServiceAccount and RBAC configuration:
+  1. **ServiceAccount:** named `pod-reader`
+  2. **Role:** named `pod-read-role`
+     - **Verbs:** get, list, watch
+     - **Resources:** pods
+  3. **RoleBinding:** named `pod-read-binding`
+     - Binds the Role to the ServiceAccount
+  4. **Pod:** named `rbac-pod`
+     - **Image:** nginx:1.24
+     - **ServiceAccount:** pod-reader
+
+  Verify the ServiceAccount is bound to the Role and the Pod uses the ServiceAccount.
+
+setup: []
+
+validation:
+  - description: "ServiceAccount pod-reader exists"
+    command: "kubectl get serviceaccount pod-reader -o jsonpath='{.metadata.name}'"
+    expect: "pod-reader"
+    match: "exact"
+  - description: "Role pod-read-role exists"
+    command: "kubectl get role pod-read-role -o jsonpath='{.metadata.name}'"
+    expect: "pod-read-role"
+    match: "exact"
+  - description: "Role has get verb"
+    command: "kubectl get role pod-read-role -o jsonpath='{.rules[0].verbs}' | grep -o 'get'"
+    expect: "get"
+    match: "exact"
+  - description: "Role has list verb"
+    command: "kubectl get role pod-read-role -o jsonpath='{.rules[0].verbs}' | grep -o 'list'"
+    expect: "list"
+    match: "exact"
+  - description: "Role has watch verb"
+    command: "kubectl get role pod-read-role -o jsonpath='{.rules[0].verbs}' | grep -o 'watch'"
+    expect: "watch"
+    match: "exact"
+  - description: "Role has pods resource"
+    command: "kubectl get role pod-read-role -o jsonpath='{.rules[0].resources[0]}'"
+    expect: "pods"
+    match: "exact"
+  - description: "RoleBinding pod-read-binding exists"
+    command: "kubectl get rolebinding pod-read-binding -o jsonpath='{.metadata.name}'"
+    expect: "pod-read-binding"
+    match: "exact"
+  - description: "RoleBinding references pod-read-role"
+    command: "kubectl get rolebinding pod-read-binding -o jsonpath='{.roleRef.name}'"
+    expect: "pod-read-role"
+    match: "exact"
+  - description: "RoleBinding references pod-reader ServiceAccount"
+    command: "kubectl get rolebinding pod-read-binding -o jsonpath='{.subjects[0].name}'"
+    expect: "pod-reader"
+    match: "exact"
+  - description: "Pod rbac-pod exists"
+    command: "kubectl get pod rbac-pod -o jsonpath='{.metadata.name}'"
+    expect: "rbac-pod"
+    match: "exact"
+  - description: "Pod uses pod-reader ServiceAccount"
+    command: "kubectl get pod rbac-pod -o jsonpath='{.spec.serviceAccountName}'"
+    expect: "pod-reader"
+    match: "exact"
+
+hint: |
+  Create ServiceAccount: kubectl create serviceaccount pod-reader
+  Create Role with rules.verbs: [get, list, watch] and rules.resources: [pods]
+  Create RoleBinding with roleRef and subjects pointing to the ServiceAccount
+  Create Pod with spec.serviceAccountName: pod-reader
+
+solution: |
+  kubectl create serviceaccount pod-reader
+
+  cat > pod-read-role.yaml << 'EOF'
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: pod-read-role
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  EOF
+
+  cat > pod-read-binding.yaml << 'EOF'
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: pod-read-binding
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: pod-read-role
+  subjects:
+  - kind: ServiceAccount
+    name: pod-reader
+  EOF
+
+  cat > rbac-pod.yaml << 'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: rbac-pod
+  spec:
+    serviceAccountName: pod-reader
+    containers:
+    - name: app
+      image: nginx:1.24
+  EOF
+
+  kubectl apply -f pod-read-role.yaml
+  kubectl apply -f pod-read-binding.yaml
+  kubectl apply -f rbac-pod.yaml

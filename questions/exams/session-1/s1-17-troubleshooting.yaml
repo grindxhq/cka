@@ -1,0 +1,54 @@
+id: "s1-17-troubleshooting"
+title: "Resource Troubleshooting"
+category: "Troubleshooting"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s1-cluster3"
+
+task: |
+  A Pod named `broken-app` has been created with an incorrect image name and is failing to start.
+  1. **Identify the issue** by inspecting the Pod's status and events
+  2. **Fix the problem** by correcting the image name to a valid nginx image
+  3. **Verify the Pod is running** successfully after the fix
+
+  The Pod should transition from ImagePullBackOff/CrashLoopBackOff to Running.
+
+setup:
+  - "kubectl run broken-app --image=nginx:invalid-version --restart=Always"
+
+validation:
+  - description: "Pod broken-app exists"
+    command: "kubectl get pod broken-app -o jsonpath='{.metadata.name}'"
+    expect: "broken-app"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod broken-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Pod image is corrected to nginx:1.24"
+    command: "kubectl get pod broken-app -o jsonpath='{.spec.containers[0].image}'"
+    expect: "nginx:1.24"
+    match: "exact"
+  - description: "Pod has ready status"
+    command: "kubectl get pod broken-app -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}'"
+    expect: "True"
+    match: "exact"
+
+hint: |
+  Use kubectl describe pod broken-app to see the error details.
+  The image name "nginx:invalid-version" cannot be pulled.
+  Use kubectl set image to update the container image to a valid nginx version like nginx:1.24.
+  Command: kubectl set image pod/broken-app broken-app=nginx:1.24
+
+solution: |
+  # First, describe the pod to identify the issue
+  kubectl describe pod broken-app
+
+  # Look for ImagePullBackOff or similar errors related to the image
+
+  # Fix the image using kubectl set image
+  kubectl set image pod/broken-app broken-app=nginx:1.24
+
+  # Verify the pod is now running
+  kubectl get pod broken-app
+  kubectl describe pod broken-app

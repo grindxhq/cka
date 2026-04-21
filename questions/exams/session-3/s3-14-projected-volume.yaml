@@ -1,0 +1,65 @@
+id: "s3-14-projected-volume"
+title: "ServiceAccount Token Volume Projection"
+category: "workloads"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster1"
+task: |
+  Create a pod named `projected-pod` in the default namespace with the following configuration:
+  - Container: nginx:1.24
+  - A projected volume named `token-volume` that projects the service account token with:
+    - Audience: "api"
+    - Expiration time: 3600 seconds (1 hour)
+
+  The pod should use the default service account and mount the projected token.
+setup: []
+validation:
+  - description: "Pod exists"
+    command: "kubectl -n default get pod projected-pod"
+    expect: "projected-pod"
+    match: "contains"
+  - description: "Pod has projected volume"
+    command: "kubectl -n default get pod projected-pod -o yaml"
+    expect: "projected"
+    match: "contains"
+  - description: "Token audience is api"
+    command: "kubectl -n default get pod projected-pod -o yaml"
+    expect: "audience: api"
+    match: "contains"
+  - description: "Expiration time is 3600"
+    command: "kubectl -n default get pod projected-pod -o yaml"
+    expect: "expirationSeconds: 3600"
+    match: "contains"
+hint: |
+  Create a pod with a projected volume using spec.volumes and serviceAccountToken projection.
+
+  The projected volume should use:
+  - sources: with serviceAccountToken
+  - path: token
+  - audience: api
+  - expirationSeconds: 3600
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: projected-pod
+    namespace: default
+  spec:
+    serviceAccountName: default
+    containers:
+      - name: nginx
+        image: nginx:1.24
+        volumeMounts:
+          - name: token-volume
+            mountPath: /var/run/secrets/tokens
+            readOnly: true
+    volumes:
+      - name: token-volume
+        projected:
+          sources:
+            - serviceAccountToken:
+                path: token
+                audience: api
+                expirationSeconds: 3600
+  EOF

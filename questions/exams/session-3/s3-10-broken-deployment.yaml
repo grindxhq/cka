@@ -1,0 +1,42 @@
+id: "s3-10-broken-deployment"
+title: "Fix Broken Deployment"
+category: "troubleshooting"
+difficulty: "medium"
+weight: 8
+context: "kind-cka-s3-cluster2"
+task: |
+  A deployment named `broken-web` has been created with an issue that prevents the pods from running.
+
+  Identify the issue and fix the deployment so that the pods become ready and available.
+
+  The issue is typically an invalid or non-existent image name.
+setup:
+  - "kubectl -n default create deployment broken-web --image=nginx:invalidtag"
+validation:
+  - description: "Deployment exists"
+    command: "kubectl -n default get deployment broken-web"
+    expect: "broken-web"
+    match: "contains"
+  - description: "Deployment has available replicas"
+    command: "kubectl -n default get deployment broken-web -o jsonpath='{.status.availableReplicas}'"
+    expect: "1"
+    match: "exact"
+  - description: "Pods are running"
+    command: "kubectl -n default get pods -l app=broken-web --field-selector=status.phase=Running"
+    expect: "broken-web"
+    match: "contains"
+hint: |
+  Use kubectl describe pod or kubectl logs to identify the issue.
+
+  The problem is likely an ImagePullBackOff or ErrImagePull error.
+
+  Fix it by updating the deployment with a valid image using kubectl set image or kubectl edit.
+solution: |
+  # Check the container name first
+  kubectl -n default get deployment broken-web -o jsonpath='{.spec.template.spec.containers[0].name}'
+
+  # Fix the image (container name is "nginx" as created by kubectl create deployment)
+  kubectl -n default set image deployment/broken-web nginx=nginx:1.24
+
+  # Wait for rollout
+  kubectl -n default rollout status deployment/broken-web --timeout=60s

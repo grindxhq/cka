@@ -1,0 +1,141 @@
+id: "s1-07-persistent-volume-pvc"
+title: "Persistent Volume and PVC"
+category: "Storage"
+difficulty: "hard"
+weight: 6
+context: "kind-cka-s1-cluster3"
+
+task: |
+  Create a PersistentVolume (PV) and PersistentVolumeClaim (PVC):
+
+  **PersistentVolume `local-pv`:**
+  - **Capacity:** 1Gi
+  - **Access Mode:** ReadWriteOnce (RWO)
+  - **Storage Class:** manual
+  - **Volume type:** hostPath with path `/mnt/data`
+
+  **PersistentVolumeClaim `local-pvc`:**
+  - **Request Size:** 500Mi
+  - **Access Mode:** ReadWriteOnce (RWO)
+  - **Storage Class:** manual
+
+  **Pod `pv-pod`:**
+  - **Image:** nginx:1.24
+  - **Mount the PVC at `/data`**
+
+  Verify the PV and PVC are bound and the Pod is running with the mounted volume.
+
+setup: []
+
+validation:
+  - description: "PersistentVolume local-pv exists"
+    command: "kubectl get pv local-pv -o jsonpath='{.metadata.name}'"
+    expect: "local-pv"
+    match: "exact"
+  - description: "PV capacity is 1Gi"
+    command: "kubectl get pv local-pv -o jsonpath='{.spec.capacity.storage}'"
+    expect: "1Gi"
+    match: "exact"
+  - description: "PV access mode is RWO"
+    command: "kubectl get pv local-pv -o jsonpath='{.spec.accessModes[0]}'"
+    expect: "ReadWriteOnce"
+    match: "exact"
+  - description: "PV storage class is manual"
+    command: "kubectl get pv local-pv -o jsonpath='{.spec.storageClassName}'"
+    expect: "manual"
+    match: "exact"
+  - description: "PV status is Bound"
+    command: "kubectl get pv local-pv -o jsonpath='{.status.phase}'"
+    expect: "Bound"
+    match: "exact"
+  - description: "PVC local-pvc exists"
+    command: "kubectl get pvc local-pvc -o jsonpath='{.metadata.name}'"
+    expect: "local-pvc"
+    match: "exact"
+  - description: "PVC request is 500Mi"
+    command: "kubectl get pvc local-pvc -o jsonpath='{.spec.resources.requests.storage}'"
+    expect: "500Mi"
+    match: "exact"
+  - description: "PVC access mode is RWO"
+    command: "kubectl get pvc local-pvc -o jsonpath='{.spec.accessModes[0]}'"
+    expect: "ReadWriteOnce"
+    match: "exact"
+  - description: "PVC status is Bound"
+    command: "kubectl get pvc local-pvc -o jsonpath='{.status.phase}'"
+    expect: "Bound"
+    match: "exact"
+  - description: "Pod pv-pod exists"
+    command: "kubectl get pod pv-pod -o jsonpath='{.metadata.name}'"
+    expect: "pv-pod"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod pv-pod -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Pod mounts PVC local-pvc"
+    command: "kubectl get pod pv-pod -o jsonpath='{.spec.volumes[0].persistentVolumeClaim.claimName}'"
+    expect: "local-pvc"
+    match: "exact"
+  - description: "Pod mounts at /data"
+    command: "kubectl get pod pv-pod -o jsonpath='{.spec.containers[0].volumeMounts[0].mountPath}'"
+    expect: "/data"
+    match: "exact"
+
+hint: |
+  Create a PV manifest with spec.capacity.storage: 1Gi, accessModes: [ReadWriteOnce], storageClassName: manual, and hostPath.path: /mnt/data.
+  Create a PVC manifest requesting 500Mi with matching accessModes and storageClassName.
+  Create a Pod that mounts the PVC at /data.
+  The PVC will automatically bind to the PV if capacity and access modes match.
+
+solution: |
+  cat > local-pv.yaml << 'EOF'
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: local-pv
+  spec:
+    capacity:
+      storage: 1Gi
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: manual
+    hostPath:
+      path: /mnt/data
+  EOF
+
+  cat > local-pvc.yaml << 'EOF'
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: local-pvc
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: manual
+    resources:
+      requests:
+        storage: 500Mi
+  EOF
+
+  cat > pv-pod.yaml << 'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pv-pod
+  spec:
+    containers:
+    - name: app
+      image: nginx:1.24
+      volumeMounts:
+      - name: pvc-volume
+        mountPath: /data
+    volumes:
+    - name: pvc-volume
+      persistentVolumeClaim:
+        claimName: local-pvc
+  EOF
+
+  kubectl apply -f local-pv.yaml
+  kubectl apply -f local-pvc.yaml
+  kubectl apply -f pv-pod.yaml
+  kubectl get pv,pvc,pod pv-pod

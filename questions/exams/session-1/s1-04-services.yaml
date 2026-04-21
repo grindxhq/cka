@@ -1,0 +1,85 @@
+id: "s1-04-services"
+title: "Services"
+category: "Networking"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster1"
+
+task: |
+  Create two Services to expose the `webapp` Deployment (from Task 02):
+  1. **ClusterIP Service:** named `webapp-svc`
+     - Selector: app=webapp
+     - Port: 80
+     - Type: ClusterIP (default)
+
+  2. **NodePort Service:** named `webapp-nodeport`
+     - Selector: app=webapp
+     - Port: 80
+     - NodePort: 30080
+
+  Verify both services are created and properly targeting the webapp pods.
+
+setup: []
+
+validation:
+  - description: "ClusterIP service webapp-svc exists"
+    command: "kubectl get service webapp-svc -o jsonpath='{.metadata.name}'"
+    expect: "webapp-svc"
+    match: "exact"
+  - description: "ClusterIP service type is ClusterIP"
+    command: "kubectl get service webapp-svc -o jsonpath='{.spec.type}'"
+    expect: "ClusterIP"
+    match: "exact"
+  - description: "ClusterIP service has port 80"
+    command: "kubectl get service webapp-svc -o jsonpath='{.spec.ports[0].port}'"
+    expect: "80"
+    match: "exact"
+  - description: "ClusterIP service has selector app=webapp"
+    command: "kubectl get service webapp-svc -o jsonpath='{.spec.selector.app}'"
+    expect: "webapp"
+    match: "exact"
+  - description: "NodePort service webapp-nodeport exists"
+    command: "kubectl get service webapp-nodeport -o jsonpath='{.metadata.name}'"
+    expect: "webapp-nodeport"
+    match: "exact"
+  - description: "NodePort service type is NodePort"
+    command: "kubectl get service webapp-nodeport -o jsonpath='{.spec.type}'"
+    expect: "NodePort"
+    match: "exact"
+  - description: "NodePort service has port 80"
+    command: "kubectl get service webapp-nodeport -o jsonpath='{.spec.ports[0].port}'"
+    expect: "80"
+    match: "exact"
+  - description: "NodePort service has nodePort 30080"
+    command: "kubectl get service webapp-nodeport -o jsonpath='{.spec.ports[0].nodePort}'"
+    expect: "30080"
+    match: "exact"
+  - description: "NodePort service has selector app=webapp"
+    command: "kubectl get service webapp-nodeport -o jsonpath='{.spec.selector.app}'"
+    expect: "webapp"
+    match: "exact"
+
+hint: |
+  Use `kubectl expose deployment` to create a ClusterIP service, or create a Service manifest.
+  For the NodePort service, add nodePort in spec.ports[0].
+  Both services must have selector app=webapp and port 80.
+
+solution: |
+  # Create ClusterIP service
+  kubectl expose deployment webapp \
+    --name=webapp-svc \
+    --port=80 \
+    --type=ClusterIP
+
+  # Create NodePort service
+  kubectl expose deployment webapp \
+    --name=webapp-nodeport \
+    --port=80 \
+    --type=NodePort
+
+  # If nodePort 30080 was not assigned, patch it:
+  kubectl patch service webapp-nodeport \
+    -p '{"spec":{"ports":[{"port":80,"nodePort":30080}]}}'
+
+  # Verify:
+  kubectl get svc webapp-svc webapp-nodeport

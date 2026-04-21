@@ -1,0 +1,44 @@
+id: "s4-01-fix-broken-deployment"
+title: "Fix Broken Deployment - Wrong Image"
+category: "Deployment Management"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s4-cluster1"
+task: |
+  A deployment has been created with an invalid image `nginx:nonexistent-v99`. The pods are unable to start.
+
+  Your task is to identify the issue and fix the deployment by updating it to use a valid nginx image (e.g., `nginx:latest` or `nginx:1.24`).
+
+  Once fixed, all pods in the deployment should be running.
+setup:
+  - "kubectl create deployment broken-app --image=nginx:nonexistent-v99 -n default"
+  - "sleep 3"
+validation:
+  - description: "Deployment exists"
+    command: "kubectl get deployment broken-app -n default -o jsonpath='{.metadata.name}'"
+    expect: "broken-app"
+    match: "exact"
+  - description: "All pods are running"
+    command: "kubectl get pods -n default -l app=broken-app -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | sort | uniq"
+    expect: "Running"
+    match: "exact"
+  - description: "Image is updated to valid image"
+    command: "kubectl get deployment broken-app -n default -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "nginx"
+    match: "contains"
+hint: |
+  1. Check the current state of the deployment and its pods
+  2. Examine the pod events to see why they're not starting
+  3. Use `kubectl edit` or `kubectl set image` to update the deployment with a valid image
+  4. Monitor the rollout until all pods are running
+solution: |
+  # Step 1: Check the deployment and pod status
+  kubectl get deployment broken-app -n default
+  kubectl get pods -n default -l app=broken-app
+
+  # Step 2: Update the deployment with a valid image
+  kubectl set image deployment/broken-app nginx=nginx:latest -n default
+
+  # Step 3: Wait for rollout and verify
+  kubectl rollout status deployment/broken-app -n default --timeout=60s
+  kubectl get pods -n default -l app=broken-app

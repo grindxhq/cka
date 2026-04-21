@@ -1,0 +1,70 @@
+id: "s1-11-cronjob"
+title: "CronJob"
+category: "Workloads"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster2"
+
+task: |
+  Create a CronJob named `backup-job` with the following specifications:
+  - **Schedule:** Every 5 minutes (*/5 * * * *)
+  - **Image:** busybox:1.36
+  - **Command:** Prints the current date and "Backup completed"
+  - **Restart Policy:** Never
+
+  Verify the CronJob is created and will trigger job runs according to the schedule.
+
+setup: []
+
+validation:
+  - description: "CronJob backup-job exists"
+    command: "kubectl get cronjob backup-job -o jsonpath='{.metadata.name}'"
+    expect: "backup-job"
+    match: "exact"
+  - description: "CronJob schedule is */5 * * * *"
+    command: "kubectl get cronjob backup-job -o jsonpath='{.spec.schedule}'"
+    expect: "*/5 * * * *"
+    match: "exact"
+  - description: "CronJob image is busybox:1.36"
+    command: "kubectl get cronjob backup-job -o jsonpath='{.spec.jobTemplate.spec.template.spec.containers[0].image}'"
+    expect: "busybox:1.36"
+    match: "exact"
+  - description: "CronJob restart policy is Never"
+    command: "kubectl get cronjob backup-job -o jsonpath='{.spec.jobTemplate.spec.template.spec.restartPolicy}'"
+    expect: "Never"
+    match: "exact"
+  - description: "CronJob has suspend=false"
+    command: "kubectl get cronjob backup-job -o jsonpath='{.spec.suspend}'"
+    expect: "false"
+    match: "exact"
+
+hint: |
+  Create a CronJob manifest with spec.schedule: '*/5 * * * *'
+  The command should print date and "Backup completed": sh -c 'echo "$(date) - Backup completed"'
+  Set restartPolicy: Never in the job template.
+  CronJob automatically creates Job objects based on the schedule.
+
+solution: |
+  cat > backup-job.yaml << 'EOF'
+  apiVersion: batch/v1
+  kind: CronJob
+  metadata:
+    name: backup-job
+  spec:
+    schedule: "*/5 * * * *"
+    jobTemplate:
+      spec:
+        template:
+          spec:
+            containers:
+            - name: backup
+              image: busybox:1.36
+              command:
+              - sh
+              - -c
+              - echo "$(date) - Backup completed"
+            restartPolicy: Never
+  EOF
+
+  kubectl apply -f backup-job.yaml
+  kubectl get cronjob backup-job

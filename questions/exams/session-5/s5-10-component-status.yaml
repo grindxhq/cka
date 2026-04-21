@@ -1,0 +1,52 @@
+id: "s5-10-component-status"
+title: "Troubleshoot Control Plane Components"
+category: "Cluster Architecture"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s5-cluster1"
+task: |
+  The kube-controller-manager on the control-plane node has been stopped.
+
+  Your tasks:
+  1. Identify that the kube-controller-manager is not running
+  2. Check the static pod manifest for kube-controller-manager
+  3. Fix the issue and restore the kube-controller-manager
+  4. Verify it's running again
+setup:
+  - "docker exec cka-s5-cluster1-control-plane bash -c 'cp /etc/kubernetes/manifests/kube-controller-manager.yaml /tmp/kube-controller-manager.yaml.bak && mv /etc/kubernetes/manifests/kube-controller-manager.yaml /tmp/kube-controller-manager.yaml.disabled'"
+  - "sleep 5"
+validation:
+  - description: "Controller manager manifest exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /etc/kubernetes/manifests/kube-controller-manager.yaml && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Controller manager pod is running"
+    command: "kubectl get pods -n kube-system -l component=kube-controller-manager -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo 'NotRunning'"
+    expect: "Running"
+    match: "exact"
+hint: |
+  1. Check running pods in kube-system: `kubectl get pods -n kube-system` (from jump host)
+  2. Control plane components run as static pods from `/etc/kubernetes/manifests/`
+  3. The manifest file may be missing or moved
+  4. Check: `ssh cka-s5-cluster1-control-plane` then `ls /etc/kubernetes/manifests/`
+  5. Look for the manifest file in /tmp/ — it may have been moved there
+solution: |
+  # Step 1: Check control plane pods (from jump host)
+  kubectl get pods -n kube-system
+
+  # Step 2: SSH to control-plane and check static pod manifests
+  ssh cka-s5-cluster1-control-plane
+
+  # Step 3: Find the missing manifest
+  ls /etc/kubernetes/manifests/
+  ls /tmp/kube-controller-manager*
+
+  # Step 4: Restore the manifest
+  cp /tmp/kube-controller-manager.yaml.bak /etc/kubernetes/manifests/kube-controller-manager.yaml
+
+  # Exit the node
+  exit
+
+  # Step 5: Wait and verify (from jump host)
+  sleep 10
+  kubectl get pods -n kube-system -l component=kube-controller-manager

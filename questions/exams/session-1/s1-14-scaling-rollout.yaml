@@ -1,0 +1,62 @@
+id: "s1-14-scaling-rollout"
+title: "Scaling and Rollout"
+category: "Workloads"
+difficulty: "medium"
+weight: 4
+context: "kind-cka-s1-cluster1"
+
+task: |
+  Using the `webapp` Deployment from Task 02, perform the following operations:
+  1. **Scale** the Deployment to **5 replicas**
+  2. **Update the image** to **nginx:1.25**
+  3. **Rollback** to the previous version
+
+  The final state should be:
+  - **3 replicas** (original count)
+  - **nginx:1.24** (original image)
+
+  Verify the Deployment is at the correct state after all operations.
+
+setup: []
+
+validation:
+  - description: "Deployment webapp exists"
+    command: "kubectl get deployment webapp -o jsonpath='{.metadata.name}'"
+    expect: "webapp"
+    match: "exact"
+  - description: "Final replicas is 3"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.replicas}'"
+    expect: "3"
+    match: "exact"
+  - description: "Final image is nginx:1.24"
+    command: "kubectl get deployment webapp -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "nginx:1.24"
+    match: "exact"
+  - description: "Pods are ready"
+    command: "kubectl get deployment webapp -o jsonpath='{.status.readyReplicas}'"
+    expect: "3"
+    match: "exact"
+
+hint: |
+  Scale: kubectl scale deployment webapp --replicas=5
+  Update image: kubectl set image deployment/webapp webapp=nginx:1.25
+  Rollout history: kubectl rollout history deployment/webapp
+  Rollback: kubectl rollout undo deployment/webapp
+  The deployment should return to the original 3 replicas and nginx:1.24 image.
+
+solution: |
+  # Scale to 5 replicas
+  kubectl scale deployment webapp --replicas=5
+
+  # Update image to nginx:1.25
+  kubectl set image deployment/webapp webapp=nginx:1.25
+
+  # Check rollout history
+  kubectl rollout history deployment/webapp
+
+  # Rollback to previous version
+  kubectl rollout undo deployment/webapp
+
+  # Scale back to original 3 replicas (rollback only reverts image, not replica count)
+  kubectl scale deployment webapp --replicas=3
+  kubectl rollout status deployment/webapp --timeout=60s

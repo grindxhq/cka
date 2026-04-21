@@ -1,0 +1,56 @@
+id: "s2-05-priority-class"
+title: "PriorityClass Configuration"
+category: "Pod Scheduling"
+difficulty: "easy"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a PriorityClass named `high-priority` with a value of 1000.
+
+  Then create a Pod named `critical-pod` using the image `nginx:1.24` that uses the `high-priority` PriorityClass.
+setup: []
+validation:
+  - description: "PriorityClass high-priority exists"
+    command: "kubectl get priorityclass high-priority -o jsonpath='{.metadata.name}'"
+    expect: "high-priority"
+    match: "exact"
+  - description: "PriorityClass has value 1000"
+    command: "kubectl get priorityclass high-priority -o jsonpath='{.value}'"
+    expect: "1000"
+    match: "exact"
+  - description: "Pod critical-pod exists"
+    command: "kubectl get pod critical-pod -o jsonpath='{.metadata.name}'"
+    expect: "critical-pod"
+    match: "exact"
+  - description: "Pod uses high-priority PriorityClass"
+    command: "kubectl get pod critical-pod -o jsonpath='{.spec.priorityClassName}'"
+    expect: "high-priority"
+    match: "exact"
+hint: |
+  - PriorityClass is a cluster-scoped resource
+  - Set the value field to 1000
+  - Pod references PriorityClass by name in priorityClassName field
+solution: |
+  # Create PriorityClass
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: scheduling.k8s.io/v1
+  kind: PriorityClass
+  metadata:
+    name: high-priority
+  value: 1000
+  globalDefault: false
+  description: "High priority for critical pods"
+  EOF
+
+  # Create Pod using the PriorityClass
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: critical-pod
+  spec:
+    priorityClassName: high-priority
+    containers:
+    - name: nginx
+      image: nginx:1.24
+  EOF

@@ -1,0 +1,79 @@
+id: "s1-15-networkpolicy"
+title: "NetworkPolicy"
+category: "Networking"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s1-cluster4"
+
+task: |
+  Create a NetworkPolicy named `allow-webapp` in the default namespace with the following rules:
+  - **Pod Selector:** Applies to pods with label `app=webapp`
+  - **Ingress Rules:**
+    - Allow traffic on port 80
+    - Only from pods with label `app=frontend`
+  - **Egress:** Allow all (unrestricted)
+
+  Verify the NetworkPolicy is applied and properly restricts traffic.
+
+setup: []
+
+validation:
+  - description: "NetworkPolicy allow-webapp exists"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.metadata.name}'"
+    expect: "allow-webapp"
+    match: "exact"
+  - description: "NetworkPolicy pod selector app=webapp"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.spec.podSelector.matchLabels.app}'"
+    expect: "webapp"
+    match: "exact"
+  - description: "NetworkPolicy has ingress rules"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.spec.ingress[0].ports[0].port}' 2>/dev/null && echo exists || echo missing"
+    expect: "exists"
+    match: "contains"
+  - description: "Ingress rule port is 80"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.spec.ingress[0].ports[0].port}'"
+    expect: "80"
+    match: "exact"
+  - description: "Ingress from selector app=frontend"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.spec.ingress[0].from[0].podSelector.matchLabels.app}'"
+    expect: "frontend"
+    match: "exact"
+  - description: "NetworkPolicy allows egress"
+    command: "kubectl get networkpolicy allow-webapp -o jsonpath='{.spec.egress[0]}' 2>/dev/null | grep -q . && echo exists || echo missing"
+    expect: "exists"
+    match: "exact"
+
+hint: |
+  Create a NetworkPolicy manifest with spec.podSelector matching app=webapp.
+  Define spec.ingress with ports and from rules.
+  Ingress from.podSelector should match app=frontend.
+  Allow egress to all with from: [{}] or an empty rule.
+
+solution: |
+  cat > allow-webapp.yaml << 'EOF'
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-webapp
+  spec:
+    podSelector:
+      matchLabels:
+        app: webapp
+    policyTypes:
+    - Ingress
+    - Egress
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: frontend
+      ports:
+      - protocol: TCP
+        port: 80
+    egress:
+    - to:
+      - podSelector: {}
+  EOF
+
+  kubectl apply -f allow-webapp.yaml
+  kubectl get networkpolicy allow-webapp

@@ -1,0 +1,16 @@
+id: "session-3"
+name: "Session 3: Advanced Topics"
+description: "16 tasks covering etcd operations, cluster upgrades, advanced networking, control plane troubleshooting, and security."
+duration: 7200
+difficulty: "advanced"
+passScore: 66
+tags: ["etcd", "upgrades", "control-plane", "networking", "security"]
+clusters:
+  - name: cka-s3-cluster1
+    controlPlane: 1
+    workers: 2
+    nodes: 3
+  - name: cka-s3-cluster2
+    controlPlane: 1
+    workers: 2
+    nodes: 3

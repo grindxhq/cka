@@ -1,0 +1,53 @@
+id: "s4-03-service-no-endpoints"
+title: "Fix Service with No Endpoints"
+category: "Service & Networking"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s4-cluster1"
+task: |
+  A deployment and service have been created, but the service has no endpoints.
+
+  The deployment has label `app=backend` but the service is selecting `app=backnd` (typo).
+
+  Your task is to identify the label mismatch and fix it so the service properly routes to the deployment pods.
+
+  After fixing, the service should have active endpoints pointing to the running pods.
+setup:
+  - "kubectl create deployment backend --image=nginx -n default"
+  - "kubectl expose deployment backend --name=backend-svc --port=80 --target-port=80 -n default"
+  - "kubectl patch service backend-svc -n default -p '{\"spec\":{\"selector\":{\"app\":\"backnd\"}}}'"
+  - "sleep 3"
+validation:
+  - description: "Service exists"
+    command: "kubectl get service backend-svc -n default -o jsonpath='{.metadata.name}'"
+    expect: "backend-svc"
+    match: "exact"
+  - description: "Service has endpoints"
+    command: "kubectl get endpointslices -l kubernetes.io/service-name=backend-svc -n default -o jsonpath='{.items[0].endpoints[*].addresses[0]}' 2>/dev/null | tr ' ' '\\n' | grep -c '.' || true"
+    expect: "^[1-9]"
+    match: "regex"
+  - description: "Service selector matches deployment labels"
+    command: "kubectl get service backend-svc -n default -o jsonpath='{.spec.selector.app}'"
+    expect: "backend"
+    match: "exact"
+hint: |
+  1. Check the service definition to see its selector
+  2. Check the deployment's pod labels
+  3. Identify the label mismatch (backnd vs backend)
+  4. Update the service selector to match the deployment labels
+  5. Verify endpoints are now populated
+solution: |
+  # Step 1: Check service selector
+  kubectl get service backend-svc -n default -o yaml
+
+  # Step 2: Check deployment labels
+  kubectl get pods -n default -L app
+
+  # Step 3: Identify the mismatch - service uses "backnd" but pods have "backend"
+
+  # Step 4: Fix the service selector
+  kubectl patch service backend-svc -n default -p '{"spec":{"selector":{"app":"backend"}}}'
+
+  # Step 5: Verify endpoints
+  kubectl get endpoints backend-svc -n default
+  kubectl describe service backend-svc -n default

@@ -1,0 +1,50 @@
+id: "s2-08-resize-pvc"
+title: "Resize PersistentVolumeClaim"
+category: "Storage"
+difficulty: "easy"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a PersistentVolumeClaim named `resizable-pvc` with the following specifications:
+  - Storage class: `standard` (default)
+  - Access mode: `ReadWriteOnce`
+  - Initial size: `1Gi`
+
+  Verify that the PVC is created correctly. (Note: In a Kind cluster, expanding the size requires additional configuration; this task focuses on understanding PVC expansion mechanics.)
+setup: []
+validation:
+  - description: "PVC resizable-pvc exists"
+    command: "kubectl get pvc resizable-pvc -o jsonpath='{.metadata.name}'"
+    expect: "resizable-pvc"
+    match: "exact"
+  - description: "PVC storage is 1Gi"
+    command: "kubectl get pvc resizable-pvc -o jsonpath='{.spec.resources.requests.storage}'"
+    expect: "1Gi"
+    match: "exact"
+  - description: "PVC access mode is ReadWriteOnce"
+    command: "kubectl get pvc resizable-pvc -o jsonpath='{.spec.accessModes[0]}'"
+    expect: "ReadWriteOnce"
+    match: "exact"
+hint: |
+  - PVC is a namespaced resource
+  - Storage size uses Kubernetes quantity format (1Gi, 2Gi, etc.)
+  - For PVC expansion, update the spec.resources.requests.storage field
+  - StorageClass allowVolumeExpansion must be true for expansion to work
+solution: |
+  # Create PersistentVolumeClaim
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: resizable-pvc
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: standard
+    resources:
+      requests:
+        storage: 1Gi
+  EOF
+
+  # To resize (if needed), update the size:
+  # kubectl patch pvc resizable-pvc -p '{"spec":{"resources":{"requests":{"storage":"2Gi"}}}}'

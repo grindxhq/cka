@@ -1,0 +1,57 @@
+id: "s2-01-node-affinity-required"
+title: "Node Affinity - Required During Scheduling"
+category: "Pod Scheduling"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a Pod named `cache-app` using the image `redis:7` with requiredDuringSchedulingIgnoredDuringExecution node affinity that requires the node to have the label `disktype=ssd`.
+
+  First, label one of the worker nodes with `disktype=ssd`, then create the Pod with the appropriate node affinity constraint.
+
+  The Pod should only be scheduled on nodes with the `disktype=ssd` label.
+setup:
+  - "WORKER=$(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}') && kubectl label nodes $WORKER disktype=ssd"
+validation:
+  - description: "Pod cache-app exists"
+    command: "kubectl get pod cache-app -o jsonpath='{.metadata.name}'"
+    expect: "cache-app"
+    match: "exact"
+  - description: "Pod is Running"
+    command: "kubectl get pod cache-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Node affinity is configured"
+    command: "kubectl get pod cache-app -o jsonpath='{.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key}'"
+    expect: "disktype"
+    match: "exact"
+hint: |
+  - Use `requiredDuringSchedulingIgnoredDuringExecution` in the node affinity spec
+  - Set matchExpressions with key `disktype` and values `[ssd]`
+  - The operator should be `In`
+solution: |
+  # Label a worker node
+  kubectl label nodes $(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}') disktype=ssd
+
+  # Create the Pod with node affinity
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: cache-app
+  spec:
+    containers:
+    - name: redis
+      image: redis:7
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: disktype
+              operator: In
+              values:
+              - ssd
+  EOF
+
+  kubectl wait --for=condition=Ready pod/cache-app --timeout=60s

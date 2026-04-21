@@ -1,0 +1,42 @@
+id: "s2-13-fix-service-routing"
+title: "Fix Service Not Routing Traffic"
+category: "Troubleshooting"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  A Deployment named `web-service` has been created with a Service, but the Service is not routing traffic to the Pods correctly.
+
+  Your task is to:
+  1. Identify the issue with the Service selector not matching Pod labels
+  2. Fix the Service by updating its selector to match the Pod labels
+  3. Verify that Service endpoints exist
+
+  The Deployment has Pods with labels `app: web-service`, but the Service has a mismatched selector.
+setup:
+  - "kubectl create deployment web-service --image=nginx:1.24 --replicas=2"
+  - "kubectl expose deployment web-service --port=80 --selector=wrong-label=value"
+validation:
+  - description: "Service web-service exists"
+    command: "kubectl get service web-service -o jsonpath='{.metadata.name}'"
+    expect: "web-service"
+    match: "exact"
+  - description: "Service has correct selector"
+    command: "kubectl get service web-service -o jsonpath='{.spec.selector.app}'"
+    expect: "web-service"
+    match: "exact"
+  - description: "Service endpoints exist"
+    command: "kubectl get endpointslices -l kubernetes.io/service-name=web-service -o jsonpath='{.items[0].endpoints[*].addresses[0]}' 2>/dev/null | tr ' ' '\\n' | grep -c '.' || true"
+    expect: "^[1-9]"
+    match: "regex"
+hint: |
+  - Use `kubectl get service web-service -o yaml` to see the current selector
+  - Use `kubectl get pods --show-labels` to see Pod labels
+  - Use `kubectl patch service` or `kubectl edit service` to fix the selector
+  - Selector should match: app=web-service
+solution: |
+  # Replace the Service selector entirely (strategic merge keeps old keys, so delete wrong one)
+  kubectl patch service web-service --type=json -p '[{"op":"remove","path":"/spec/selector/wrong-label"},{"op":"add","path":"/spec/selector/app","value":"web-service"}]'
+
+  # Verify endpoints
+  kubectl get endpoints web-service

@@ -1,0 +1,45 @@
+id: "s3-12-hpa"
+title: "Create HorizontalPodAutoscaler"
+category: "workloads"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster1"
+task: |
+  Create a HorizontalPodAutoscaler (HPA) named `webapp-hpa` in the default namespace for the deployment `webapp-hpa` with the following configuration:
+  - Minimum replicas: 2
+  - Maximum replicas: 10
+  - Target CPU utilization: 50%
+
+  The deployment should already exist. If it doesn't, create it with a simple nginx:1.24 image.
+setup:
+  - "kubectl -n default create deployment webapp-hpa --image=nginx:1.24 || true"
+validation:
+  - description: "HPA exists"
+    command: "kubectl -n default get hpa webapp-hpa"
+    expect: "webapp-hpa"
+    match: "contains"
+  - description: "Min replicas is 2"
+    command: "kubectl -n default get hpa webapp-hpa -o jsonpath='{.spec.minReplicas}'"
+    expect: "2"
+    match: "exact"
+  - description: "Max replicas is 10"
+    command: "kubectl -n default get hpa webapp-hpa -o jsonpath='{.spec.maxReplicas}'"
+    expect: "10"
+    match: "exact"
+  - description: "Target CPU is 50"
+    command: "kubectl -n default get hpa webapp-hpa -o jsonpath='{.spec.metrics[?(@.type==\"Resource\")].resource.target.averageUtilization}' 2>/dev/null || kubectl -n default get hpa webapp-hpa -o jsonpath='{.spec.targetCPUUtilizationPercentage}'"
+    expect: "50"
+    match: "exact"
+hint: |
+  Use kubectl autoscale command or create an HPA manifest.
+
+  With kubectl autoscale:
+  kubectl autoscale deployment webapp-hpa --min=2 --max=10 --cpu-percent=50 -n default
+
+  Or use a manifest with:
+  - spec.scaleTargetRef pointing to the deployment
+  - spec.minReplicas: 2
+  - spec.maxReplicas: 10
+  - spec.targetCPUUtilizationPercentage: 50
+solution: |
+  kubectl -n default autoscale deployment webapp-hpa --min=2 --max=10 --cpu-percent=50

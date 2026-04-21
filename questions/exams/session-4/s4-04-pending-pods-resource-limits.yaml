@@ -1,0 +1,58 @@
+id: "s4-04-pending-pods-resource-limits"
+title: "Fix Pending Pods - Resource Limits"
+category: "Resource Management"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s4-cluster1"
+task: |
+  A namespace has been created with a very restrictive ResourceQuota. When you try to deploy an application, the pods get stuck in Pending state because they exceed the quota limits.
+
+  Your task is to:
+  1. Identify the ResourceQuota and its limits
+  2. Either adjust the quota to accommodate the pods, or
+  3. Adjust the pod resource requests/limits to fit within the quota
+
+  The goal is to get all pods running.
+setup:
+  - "kubectl create namespace quota-test"
+  - "kubectl create resourcequota tight-quota -n quota-test --hard=requests.memory=64Mi,requests.cpu=100m,limits.memory=128Mi,limits.cpu=200m"
+  - "kubectl apply -n quota-test -f - <<EOF\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: app\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: app\n  template:\n    metadata:\n      labels:\n        app: app\n    spec:\n      containers:\n      - name: nginx\n        image: nginx\n        resources:\n          requests:\n            memory: 100Mi\n            cpu: 100m\n          limits:\n            memory: 256Mi\n            cpu: 200m\nEOF"
+  - "sleep 3"
+validation:
+  - description: "Namespace exists"
+    command: "kubectl get namespace quota-test -o jsonpath='{.metadata.name}'"
+    expect: "quota-test"
+    match: "exact"
+  - description: "All pods in namespace are running"
+    command: "kubectl get pods -n quota-test -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | sort | uniq"
+    expect: "Running"
+    match: "exact"
+  - description: "ResourceQuota exists"
+    command: "kubectl get resourcequota -n quota-test -o jsonpath='{.items[0].metadata.name}'"
+    expect: "tight-quota"
+    match: "exact"
+hint: |
+  1. Check the current ResourceQuota: `kubectl describe resourcequota -n quota-test`
+  2. Check pod events to see why they're pending: `kubectl describe pod -n quota-test`
+  3. Identify the resource mismatch
+  4. Either increase the quota limits or decrease pod resource requests
+  5. Verify pods start running
+solution: |
+  # Step 1: Check ResourceQuota
+  kubectl describe resourcequota tight-quota -n quota-test
+
+  # Step 2: Check pod status and events
+  kubectl get pods -n quota-test
+
+  # Step 3: Identify the mismatch - pods need 100Mi memory but quota only allows 64Mi
+
+  # Step 4: Increase the quota to accommodate the pods
+  kubectl delete resourcequota tight-quota -n quota-test
+  kubectl create resourcequota tight-quota -n quota-test --hard=requests.memory=512Mi,requests.cpu=400m,limits.memory=1Gi,limits.cpu=800m
+
+  # Step 5: Restart deployment to trigger pod creation with new quota
+  kubectl rollout restart deployment/app -n quota-test
+  kubectl rollout status deployment/app -n quota-test --timeout=120s
+
+  # Step 6: Verify pods are running
+  kubectl get pods -n quota-test

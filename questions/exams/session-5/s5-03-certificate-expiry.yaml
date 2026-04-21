@@ -1,0 +1,47 @@
+id: "s5-03-certificate-expiry"
+title: "Check Certificate Expiration"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s5-cluster1"
+task: |
+  Inspect the TLS certificates used by the Kubernetes API server on the control-plane node.
+
+  1. Use `kubeadm certs check-expiration` to list all certificate expiration dates
+  2. Save the output to `/tmp/cert-expiry.txt` on the control-plane node
+  3. Identify which certificate expires first
+setup:
+  - "sleep 1"
+validation:
+  - description: "Certificate expiry file exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /tmp/cert-expiry.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "File contains certificate information"
+    command: "docker exec cka-s5-cluster1-control-plane grep 'apiserver' /tmp/cert-expiry.txt"
+    expect: "apiserver"
+    match: "contains"
+  - description: "File contains expiration data"
+    command: "docker exec cka-s5-cluster1-control-plane grep -E 'EXPIRES|expires|residual' /tmp/cert-expiry.txt"
+    expect: ""
+    match: "contains"
+hint: |
+  1. Access the control-plane node: `ssh cka-s5-cluster1-control-plane`
+  2. Run: `kubeadm certs check-expiration`
+  3. Redirect output to the required file
+  4. You can also manually check certs with: `openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -enddate`
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster1-control-plane
+
+  # Check certificate expiration and save output
+  kubeadm certs check-expiration > /tmp/cert-expiry.txt 2>&1
+
+  # View the output
+  cat /tmp/cert-expiry.txt
+
+  # Optionally check a specific certificate manually
+  openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -enddate
+
+  # Exit the node
+  exit

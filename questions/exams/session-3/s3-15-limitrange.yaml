@@ -1,0 +1,59 @@
+id: "s3-15-limitrange"
+title: "Resource LimitRange Configuration"
+category: "workloads"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster2"
+task: |
+  Create a LimitRange named `default-limits` in a new namespace `limited-ns` with the following resource constraints:
+  - Default CPU limit: 500m
+  - Default CPU request: 200m
+  - Default memory limit: 256Mi
+
+  The namespace should be created first if it doesn't exist.
+setup:
+  - "kubectl create namespace limited-ns || true"
+validation:
+  - description: "LimitRange exists"
+    command: "kubectl -n limited-ns get limitrange default-limits"
+    expect: "default-limits"
+    match: "contains"
+  - description: "Default CPU limit is 500m"
+    command: "kubectl -n limited-ns get limitrange default-limits -o jsonpath='{.spec.limits[0].default.cpu}'"
+    expect: "500m"
+    match: "exact"
+  - description: "Default CPU request is 200m"
+    command: "kubectl -n limited-ns get limitrange default-limits -o jsonpath='{.spec.limits[0].defaultRequest.cpu}'"
+    expect: "200m"
+    match: "exact"
+  - description: "Default memory limit is 256Mi"
+    command: "kubectl -n limited-ns get limitrange default-limits -o jsonpath='{.spec.limits[0].default.memory}'"
+    expect: "256Mi"
+    match: "exact"
+hint: |
+  Create a LimitRange with spec.limits containing default values.
+
+  Structure:
+  - limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 256Mi
+      defaultRequest:
+        cpu: 200m
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: default-limits
+    namespace: limited-ns
+  spec:
+    limits:
+      - type: Container
+        default:
+          cpu: 500m
+          memory: 256Mi
+        defaultRequest:
+          cpu: 200m
+  EOF

@@ -1,0 +1,83 @@
+id: "s4-17-security-audit"
+title: "Security Audit - Fix Privileged Container"
+category: "Security & Container Hardening"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  A pod is running with dangerous security configurations:
+  - Running as root
+  - Using hostNetwork
+  - Has all capabilities
+  - Does not have readOnlyRootFilesystem
+
+  Your task is to:
+  1. Identify the insecure pod "legacy-app"
+  2. Fix the pod's securityContext to:
+     - Run as non-root user (uid 1000)
+     - Not use hostNetwork
+     - Drop all capabilities
+     - Enable readOnlyRootFilesystem
+  3. Verify the pod is running with proper security constraints
+
+  Note: You may need to recreate the pod with proper securityContext.
+setup:
+  - "cat <<EOF | kubectl apply -f -\napiVersion: v1\nkind: Pod\nmetadata:\n  name: legacy-app\n  namespace: default\nspec:\n  hostNetwork: true\n  containers:\n    - name: app\n      image: nginx\n      securityContext:\n        runAsUser: 0\n        privileged: true\nEOF"
+  - "sleep 2"
+validation:
+  - description: "Pod legacy-app exists"
+    command: "kubectl get pod legacy-app -n default -o jsonpath='{.metadata.name}'"
+    expect: "legacy-app"
+    match: "exact"
+  - description: "Pod does not use hostNetwork"
+    command: "kubectl get pod legacy-app -n default -o jsonpath='{.spec.hostNetwork}'"
+    expect: "false|"
+    match: "regex"
+  - description: "Pod runs as non-root"
+    command: "kubectl get pod legacy-app -n default -o jsonpath='{.spec.containers[0].securityContext.runAsUser}'"
+    expect: "1000"
+    match: "exact"
+  - description: "Pod has allowPrivilegeEscalation disabled"
+    command: "kubectl get pod legacy-app -n default -o jsonpath='{.spec.containers[0].securityContext.allowPrivilegeEscalation}'"
+    expect: "false"
+    match: "exact"
+hint: |
+  1. Check current pod security: `kubectl get pod legacy-app -n default -o yaml`
+  2. Identify insecure settings (hostNetwork: true, runAsUser: 0, privileged: true)
+  3. Delete the pod: `kubectl delete pod legacy-app -n default`
+  4. Create secured version with proper securityContext
+  5. Verify security settings
+solution: |
+  # Step 1: Check insecure pod
+  kubectl get pod legacy-app -n default -o yaml
+  kubectl describe pod legacy-app -n default
+
+  # Step 2: Delete insecure pod
+  kubectl delete pod legacy-app -n default
+
+  # Step 3: Create secure pod
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: legacy-app
+    namespace: default
+  spec:
+    containers:
+      - name: app
+        image: nginx
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+    securityContext:
+      fsGroup: 1000
+  EOF
+
+  # Step 4: Verify security settings
+  kubectl get pod legacy-app -n default -o yaml
+  kubectl describe pod legacy-app -n default

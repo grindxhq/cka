@@ -1,0 +1,66 @@
+id: "s4-13-missing-configmap"
+title: "Missing ConfigMap Causing Pod Failure"
+category: "ConfigMap & Configuration"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  A pod has been created that references a ConfigMap "app-settings" that doesn't exist.
+
+  The pod is stuck in CreateContainerConfigError state.
+
+  Your task is to:
+  1. Identify the missing ConfigMap
+  2. Create the ConfigMap with appropriate data
+  3. Verify the pod transitions to Running state
+
+  ConfigMap should contain:
+  - Key: "APP_MODE" with value "production"
+  - Key: "LOG_LEVEL" with value "info"
+setup:
+  - "cat <<EOF | kubectl apply -f -\napiVersion: v1\nkind: Pod\nmetadata:\n  name: config-test\n  namespace: default\nspec:\n  containers:\n    - name: app\n      image: nginx\n      envFrom:\n        - configMapRef:\n            name: app-settings\nEOF"
+  - "sleep 2"
+validation:
+  - description: "ConfigMap app-settings exists"
+    command: "kubectl get configmap app-settings -n default -o jsonpath='{.metadata.name}'"
+    expect: "app-settings"
+    match: "exact"
+  - description: "ConfigMap has required keys"
+    command: "kubectl get configmap app-settings -n default -o jsonpath='{.data.APP_MODE}'"
+    expect: ".+"
+    match: "regex"
+  - description: "Pod is running"
+    command: "kubectl get pod config-test -n default -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+hint: |
+  1. Check pod status: `kubectl get pods -n default`
+  2. Check pod events: `kubectl describe pod config-test -n default`
+  3. Identify missing ConfigMap "app-settings"
+  4. Create ConfigMap: `kubectl create configmap app-settings --from-literal=APP_MODE=production --from-literal=LOG_LEVEL=info`
+  5. Verify pod starts
+solution: |
+  # Step 1: Check pod status
+  kubectl get pods -n default
+  kubectl describe pod config-test -n default
+
+  # Step 2: Identify missing ConfigMap
+
+  # Step 3: Create the ConfigMap
+  kubectl create configmap app-settings --from-literal=APP_MODE=production --from-literal=LOG_LEVEL=info -n default
+
+  # Or with YAML
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: app-settings
+    namespace: default
+  data:
+    APP_MODE: production
+    LOG_LEVEL: info
+  EOF
+
+  # Step 4: Verify pod is running
+  kubectl get pods -n default
+  kubectl describe pod config-test -n default

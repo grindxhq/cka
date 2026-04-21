@@ -1,0 +1,51 @@
+id: "s5-11-node-maintenance"
+title: "Node Maintenance - Drain and Cordon"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s5-cluster1"
+task: |
+  You need to perform maintenance on worker node `cka-s5-cluster1-worker`.
+
+  1. Cordon the node so no new pods are scheduled on it
+  2. Drain the node safely (ignore DaemonSets)
+  3. Verify the node shows as `SchedulingDisabled`
+
+  After maintenance is complete:
+  4. Uncordon the node to allow scheduling again
+  5. Verify the node is ready and schedulable
+setup:
+  - "kubectl create deployment drain-test --image=nginx --replicas=2"
+  - "sleep 5"
+validation:
+  - description: "Node is uncordoned and Ready"
+    command: "kubectl get node cka-s5-cluster1-worker -o jsonpath='{.spec.unschedulable}'"
+    expect: ""
+    match: "exact"
+  - description: "Node status is Ready"
+    command: "kubectl get node cka-s5-cluster1-worker -o jsonpath='{range .status.conditions[*]}{.type}={.status} {end}' | grep 'Ready=True'"
+    expect: "Ready=True"
+    match: "contains"
+hint: |
+  1. Cordon: `kubectl cordon cka-s5-cluster1-worker`
+  2. Drain: `kubectl drain cka-s5-cluster1-worker --ignore-daemonsets --delete-emptydir-data`
+  3. Check status: `kubectl get nodes`
+  4. Uncordon: `kubectl uncordon cka-s5-cluster1-worker`
+solution: |
+  # Step 1: Cordon the node
+  kubectl cordon cka-s5-cluster1-worker
+
+  # Step 2: Verify cordoned
+  kubectl get nodes
+
+  # Step 3: Drain the node
+  kubectl drain cka-s5-cluster1-worker --ignore-daemonsets --delete-emptydir-data --force --timeout=60s
+
+  # Step 4: Verify drained (SchedulingDisabled)
+  kubectl get nodes
+
+  # Step 5: Uncordon after maintenance
+  kubectl uncordon cka-s5-cluster1-worker
+
+  # Step 6: Verify uncordoned and Ready
+  kubectl get nodes

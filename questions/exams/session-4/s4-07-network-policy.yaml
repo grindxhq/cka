@@ -1,0 +1,71 @@
+id: "s4-07-network-policy"
+title: "Network Policy Blocking Traffic"
+category: "Network & Security Policies"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s4-cluster2"
+task: |
+  A deny-all NetworkPolicy has been created that blocks all traffic.
+
+  A deployment has been created that needs to communicate with other pods, but the network policy prevents it.
+
+  Your task is to:
+  1. Examine the existing deny-all NetworkPolicy
+  2. Create a new NetworkPolicy that allows necessary traffic:
+     - Allow pods with label `app=client` to connect to pods with label `app=server` on port 80
+  3. Verify the network policy is in place and allows the required traffic
+
+  Requirements:
+  - NetworkPolicy must be named "allow-app-traffic"
+  - Must allow client pods to reach server pods on port 80
+setup:
+  - "kubectl create namespace netpolicy-test"
+  - "kubectl apply -f - <<EOF\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: deny-all\n  namespace: netpolicy-test\nspec:\n  podSelector: {}\n  policyTypes:\n    - Ingress\n    - Egress\nEOF"
+  - "kubectl create deployment client --image=curlimages/curl -n netpolicy-test -- /bin/sh -c 'sleep 3600'"
+  - "kubectl create deployment server --image=nginx -n netpolicy-test"
+  - "sleep 3"
+validation:
+  - description: "NetworkPolicy allow-app-traffic exists"
+    command: "kubectl get networkpolicy allow-app-traffic -n netpolicy-test -o jsonpath='{.metadata.name}'"
+    expect: "allow-app-traffic"
+    match: "exact"
+  - description: "NetworkPolicy has ingress rules"
+    command: "kubectl get networkpolicy allow-app-traffic -n netpolicy-test -o jsonpath='{.spec.ingress[0].from[0].podSelector.matchLabels.app}'"
+    expect: "client"
+    match: "exact"
+hint: |
+  1. Check the deny-all NetworkPolicy: `kubectl describe networkpolicy deny-all -n netpolicy-test`
+  2. Create a new NetworkPolicy that allows specific traffic
+  3. Use podSelector to identify source and destination pods
+  4. Specify the port and protocol (tcp)
+  5. Apply the policy and verify
+solution: |
+  # Step 1: Check existing policy
+  kubectl describe networkpolicy deny-all -n netpolicy-test
+
+  # Step 2: Create allow-app-traffic NetworkPolicy
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-app-traffic
+    namespace: netpolicy-test
+  spec:
+    podSelector:
+      matchLabels:
+        app: server
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - podSelector:
+              matchLabels:
+                app: client
+        ports:
+          - protocol: TCP
+            port: 80
+  EOF
+
+  # Step 3: Verify the policy
+  kubectl get networkpolicy -n netpolicy-test
+  kubectl describe networkpolicy allow-app-traffic -n netpolicy-test

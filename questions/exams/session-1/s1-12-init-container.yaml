@@ -1,0 +1,71 @@
+id: "s1-12-init-container"
+title: "Init Container"
+category: "Workloads"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s1-cluster3"
+
+task: |
+  Create a Pod named `web-app` with an init container and main container:
+  - **Init Container:** named `init-check`
+    - **Image:** busybox:1.36
+    - **Command:** Sleep for 5 seconds then exit successfully
+  - **Main Container:** named `nginx`
+    - **Image:** nginx:1.24
+
+  Verify the init container completes before the main container starts.
+
+setup: []
+
+validation:
+  - description: "Pod web-app exists"
+    command: "kubectl get pod web-app -o jsonpath='{.metadata.name}'"
+    expect: "web-app"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod web-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Init container name is init-check"
+    command: "kubectl get pod web-app -o jsonpath='{.spec.initContainers[0].name}'"
+    expect: "init-check"
+    match: "exact"
+  - description: "Init container image is busybox:1.36"
+    command: "kubectl get pod web-app -o jsonpath='{.spec.initContainers[0].image}'"
+    expect: "busybox:1.36"
+    match: "exact"
+  - description: "Main container name is nginx"
+    command: "kubectl get pod web-app -o jsonpath='{.spec.containers[0].name}'"
+    expect: "nginx"
+    match: "exact"
+  - description: "Main container image is nginx:1.24"
+    command: "kubectl get pod web-app -o jsonpath='{.spec.containers[0].image}'"
+    expect: "nginx:1.24"
+    match: "exact"
+  - description: "Init container completed successfully"
+    command: "kubectl get pod web-app -o jsonpath='{.status.initContainerStatuses[0].state.terminated.reason}'"
+    expect: "Completed"
+    match: "exact"
+
+hint: |
+  Create a Pod manifest with spec.initContainers array before spec.containers.
+  Init containers must complete successfully before main containers start.
+  Use command: [sh, -c, 'sleep 5']
+  The Pod status shows init container has completed when the main container is running.
+
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: web-app
+  spec:
+    initContainers:
+    - name: init-check
+      image: busybox:1.36
+      command: ["/bin/sh", "-c", "sleep 5"]
+    containers:
+    - name: nginx
+      image: nginx:1.24
+  EOF
+  kubectl wait --for=condition=Ready pod/web-app --timeout=60s

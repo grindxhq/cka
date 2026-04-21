@@ -1,0 +1,63 @@
+id: "s2-02-node-affinity-preferred"
+title: "Node Affinity - Preferred During Scheduling"
+category: "Pod Scheduling"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a Deployment named `web-app` with the following specifications:
+  - Image: `nginx:1.24`
+  - Replicas: 3
+  - preferredDuringSchedulingIgnoredDuringExecution node affinity for the label `zone=us-east-1a` with a weight of 80
+
+  The Deployment should prefer nodes with the `zone=us-east-1a` label but should still schedule pods on other nodes if necessary.
+setup:
+  - "WORKER=$(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}') && kubectl label nodes $WORKER zone=us-east-1a"
+validation:
+  - description: "Deployment web-app exists"
+    command: "kubectl get deployment web-app -o jsonpath='{.metadata.name}'"
+    expect: "web-app"
+    match: "exact"
+  - description: "Deployment has 3 replicas"
+    command: "kubectl get deployment web-app -o jsonpath='{.spec.replicas}'"
+    expect: "3"
+    match: "exact"
+  - description: "Preferred node affinity is configured"
+    command: "kubectl get deployment web-app -o jsonpath='{.spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight}'"
+    expect: "80"
+    match: "exact"
+hint: |
+  - Use `preferredDuringSchedulingIgnoredDuringExecution` in the node affinity spec
+  - Set the weight to 80
+  - Set matchExpressions with key `zone` and values `[us-east-1a]`
+  - The operator should be `In`
+solution: |
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: web-app
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: web-app
+    template:
+      metadata:
+        labels:
+          app: web-app
+      spec:
+        containers:
+        - name: nginx
+          image: nginx:1.24
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                - key: zone
+                  operator: In
+                  values:
+                  - us-east-1a
+  EOF

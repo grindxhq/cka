@@ -1,0 +1,31 @@
+id: "s3-04-etcd-list-keys"
+title: "Query etcd Namespace Keys"
+category: "etcd"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster1"
+task: |
+  List all namespace keys stored in etcd and save the output to `/tmp/etcd-namespaces.txt` inside the control-plane node.
+
+  The output should contain entries like "/registry/namespaces/..." showing the namespace objects stored in etcd.
+setup:
+  - "docker exec cka-s3-cluster1-control-plane bash -c 'command -v etcdctl >/dev/null 2>&1 || { ETCD_VER=v3.5.12 && ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl; }'"
+validation:
+  - description: "Namespace keys file exists"
+    command: "docker exec cka-s3-cluster1-control-plane cat /tmp/etcd-namespaces.txt"
+    expect: "/registry/namespaces"
+    match: "contains"
+hint: |
+  SSH into the control-plane node and use ETCDCTL_API=3 etcdctl get with the --prefix flag to query all keys starting with "/registry/namespaces/".
+
+  The command is:
+  etcdctl get /registry/namespaces/ --prefix
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s3-cluster1-control-plane
+
+  # List namespace keys and save to file
+  ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --endpoints=https://127.0.0.1:2379 get /registry/namespaces/ --prefix > /tmp/etcd-namespaces.txt
+
+  # Exit the node
+  exit

@@ -1,0 +1,12 @@
+id: "session-2"
+name: "Session 2: Intermediate Operations"
+description: "17 tasks covering advanced scheduling, RBAC, StatefulSets, StorageClass, and troubleshooting scenarios."
+duration: 7200
+difficulty: "intermediate"
+passScore: 66
+tags: ["scheduling", "rbac", "storage", "troubleshooting"]
+clusters:
+  - name: cka-s2-cluster1
+    controlPlane: 1
+    workers: 2
+    nodes: 3

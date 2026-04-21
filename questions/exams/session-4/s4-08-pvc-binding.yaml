@@ -1,0 +1,69 @@
+id: "s4-08-pvc-binding"
+title: "PV/PVC Binding Issue"
+category: "Storage Management"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  A PersistentVolume (PV) and PersistentVolumeClaim (PVC) have been created, but they're not binding.
+
+  The PV has storageClass "fast" but the PVC is requesting storageClass "slow".
+
+  Your task is to:
+  1. Identify the storage class mismatch
+  2. Update either the PV or PVC to use matching storage classes
+  3. Verify the PVC becomes Bound
+
+  You need the PVC to be in Bound state.
+setup:
+  - "kubectl create namespace storage-test"
+  - "kubectl apply -f - <<EOF\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: test-pv\nspec:\n  capacity:\n    storage: 1Gi\n  accessModes:\n    - ReadWriteOnce\n  storageClassName: fast\n  hostPath:\n    path: /tmp/test-pv\nEOF"
+  - "kubectl apply -f - <<EOF\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: test-pvc\n  namespace: storage-test\nspec:\n  storageClassName: slow\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 1Gi\nEOF"
+  - "sleep 2"
+validation:
+  - description: "PVC exists"
+    command: "kubectl get pvc test-pvc -n storage-test -o jsonpath='{.metadata.name}'"
+    expect: "test-pvc"
+    match: "exact"
+  - description: "PVC is Bound"
+    command: "kubectl get pvc test-pvc -n storage-test -o jsonpath='{.status.phase}'"
+    expect: "Bound"
+    match: "exact"
+  - description: "PV and PVC storage classes match"
+    command: "kubectl get pvc test-pvc -n storage-test -o jsonpath='{.spec.storageClassName}'"
+    expect: "fast"
+    match: "exact"
+hint: |
+  1. Check PVC status: `kubectl get pvc -n storage-test`
+  2. Check PV: `kubectl get pv`
+  3. Compare storage classes: `kubectl get pvc test-pvc -n storage-test -o yaml | grep storageClassName`
+  4. Update PVC to use "fast" storage class: `kubectl patch pvc test-pvc -n storage-test -p '{\"spec\":{\"storageClassName\":\"fast\"}}'`
+  5. Verify Bound status
+solution: |
+  # Step 1: Check PVC and PV status
+  kubectl get pvc -n storage-test
+  kubectl get pv
+
+  # Step 2: Identify the storage class mismatch (PVC has "slow", PV has "fast")
+
+  # Step 3: Delete the mismatched PVC and recreate with correct storageClass
+  kubectl delete pvc test-pvc -n storage-test
+
+  kubectl apply -f - <<EOF
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: test-pvc
+    namespace: storage-test
+  spec:
+    storageClassName: fast
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  EOF
+
+  # Step 4: Verify binding
+  kubectl get pvc -n storage-test
+  kubectl get pv

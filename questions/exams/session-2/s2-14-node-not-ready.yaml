@@ -1,0 +1,39 @@
+id: "s2-14-node-not-ready"
+title: "Troubleshoot Node in NotReady State"
+category: "Troubleshooting"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s2-cluster1"
+task: |
+  A worker node in the cluster is in NotReady state.
+
+  Your task is to:
+  1. Identify which node is in NotReady/SchedulingDisabled state
+  2. Understand the issue (in this case, the node is cordoned)
+  3. Fix the node by uncordoning it
+  4. Verify the node returns to Ready state
+
+  Note: In a Kind cluster, simulating an actual NotReady state is complex. This task focuses on the cordoning scenario, which prevents scheduling and is a common troubleshooting scenario.
+setup:
+  - "kubectl cordon $(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}')"
+validation:
+  - description: "All nodes are Ready"
+    command: "kubectl get nodes --no-headers | grep -c ' Ready' || true"
+    expect: "^[2-9]"
+    match: "regex"
+  - description: "No nodes are cordoned"
+    command: "kubectl get nodes --no-headers | grep -c 'SchedulingDisabled' || true"
+    expect: "0"
+    match: "exact"
+hint: |
+  - Use `kubectl get nodes` to see node status
+  - Look for `Ready` condition status
+  - Use `kubectl describe node <node-name>` to see detailed status
+  - If a node is cordoned, use `kubectl uncordon <node-name>`
+  - Cordoned nodes show `SchedulingDisabled` in the status
+solution: |
+  # Uncordon all cordoned nodes
+  kubectl get nodes --no-headers | grep SchedulingDisabled | awk '{print $1}' | xargs -I {} kubectl uncordon {}
+
+  # Verify all nodes are Ready
+  kubectl get nodes

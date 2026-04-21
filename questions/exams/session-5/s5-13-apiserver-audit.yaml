@@ -1,0 +1,58 @@
+id: "s5-13-apiserver-audit"
+title: "Inspect API Server Configuration"
+category: "Cluster Architecture"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s5-cluster1"
+task: |
+  Inspect the kube-apiserver configuration on the control-plane node.
+
+  1. Find the kube-apiserver static pod manifest
+  2. Identify the following from its configuration and save to `/tmp/apiserver-info.txt` on the control-plane node:
+     - The `--service-cluster-ip-range` value
+     - The `--etcd-servers` endpoint
+     - The `--authorization-mode` value
+
+  Format: one value per line, just the values (not the flag names).
+setup:
+  - "sleep 1"
+validation:
+  - description: "Info file exists"
+    command: "docker exec cka-s5-cluster1-control-plane test -f /tmp/apiserver-info.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "File contains service CIDR"
+    command: "docker exec cka-s5-cluster1-control-plane cat /tmp/apiserver-info.txt | head -1 | grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+'"
+    expect: "/"
+    match: "contains"
+  - description: "File contains etcd endpoint"
+    command: "docker exec cka-s5-cluster1-control-plane cat /tmp/apiserver-info.txt | grep '2379'"
+    expect: "2379"
+    match: "contains"
+  - description: "File contains auth modes"
+    command: "docker exec cka-s5-cluster1-control-plane cat /tmp/apiserver-info.txt | grep -i 'RBAC\\|Node'"
+    expect: ""
+    match: "contains"
+hint: |
+  1. Access the control-plane: `ssh cka-s5-cluster1-control-plane`
+  2. Read the manifest: `cat /etc/kubernetes/manifests/kube-apiserver.yaml`
+  3. Look for the flags in the `command` section of the container spec
+  4. Extract values using grep: `grep -- '--service-cluster-ip-range' /etc/kubernetes/manifests/kube-apiserver.yaml`
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster1-control-plane
+
+  # Extract API server configuration values
+  MANIFEST=/etc/kubernetes/manifests/kube-apiserver.yaml
+  CIDR=$(grep -- "--service-cluster-ip-range" $MANIFEST | sed "s/.*=//")
+  ETCD=$(grep -- "--etcd-servers" $MANIFEST | sed "s/.*=//")
+  AUTH=$(grep -- "--authorization-mode" $MANIFEST | sed "s/.*=//")
+  echo "$CIDR" > /tmp/apiserver-info.txt
+  echo "$ETCD" >> /tmp/apiserver-info.txt
+  echo "$AUTH" >> /tmp/apiserver-info.txt
+
+  # Verify the file
+  cat /tmp/apiserver-info.txt
+
+  # Exit the node
+  exit

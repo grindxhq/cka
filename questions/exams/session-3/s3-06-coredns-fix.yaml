@@ -1,0 +1,31 @@
+id: "s3-06-coredns-fix"
+title: "Fix Broken CoreDNS"
+category: "networking"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster2"
+task: |
+  The CoreDNS deployment has been scaled down and DNS resolution is not working in the cluster.
+
+  Restore CoreDNS to a working state so that DNS resolution works for pods in the cluster.
+
+  Verify that CoreDNS pods are running and that a test pod can resolve a Kubernetes service.
+setup:
+  - "kubectl -n kube-system scale deployment coredns --replicas=0"
+validation:
+  - description: "CoreDNS pods are running"
+    command: "kubectl -n kube-system get pods -l k8s-app=kube-dns --field-selector=status.phase=Running"
+    expect: "Running"
+    match: "contains"
+  - description: "CoreDNS replicas set to 2"
+    command: "kubectl -n kube-system get deployment coredns -o jsonpath='{.spec.replicas}'"
+    expect: "2"
+    match: "exact"
+hint: |
+  Scale the CoreDNS deployment back to 2 replicas using kubectl scale command.
+
+  Verify the pods are running with:
+  kubectl -n kube-system get pods -l k8s-app=kube-dns
+solution: |
+  kubectl -n kube-system scale deployment coredns --replicas=2
+  kubectl -n kube-system wait --for=condition=Ready pod -l k8s-app=kube-dns --timeout=300s

@@ -1,0 +1,51 @@
+id: "s5-12-rbac-clusterrole"
+title: "Create ClusterRole for Node Reader"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s5-cluster1"
+task: |
+  Create RBAC resources to allow a service account to read node information cluster-wide.
+
+  1. Create a ServiceAccount named `node-reader` in the `default` namespace
+  2. Create a ClusterRole named `node-reader-role` that allows `get`, `list`, and `watch` on `nodes`
+  3. Create a ClusterRoleBinding named `node-reader-binding` that binds the ServiceAccount to the ClusterRole
+  4. Verify the service account can list nodes using `kubectl auth can-i`
+setup:
+  - "sleep 1"
+validation:
+  - description: "ServiceAccount exists"
+    command: "kubectl get sa node-reader -o jsonpath='{.metadata.name}'"
+    expect: "node-reader"
+    match: "exact"
+  - description: "ClusterRole exists"
+    command: "kubectl get clusterrole node-reader-role -o jsonpath='{.metadata.name}'"
+    expect: "node-reader-role"
+    match: "exact"
+  - description: "ClusterRoleBinding exists"
+    command: "kubectl get clusterrolebinding node-reader-binding -o jsonpath='{.metadata.name}'"
+    expect: "node-reader-binding"
+    match: "exact"
+  - description: "ServiceAccount can list nodes"
+    command: "kubectl auth can-i list nodes --as=system:serviceaccount:default:node-reader 2>/dev/null"
+    expect: "yes"
+    match: "contains"
+hint: |
+  1. `kubectl create serviceaccount node-reader`
+  2. `kubectl create clusterrole node-reader-role --verb=get,list,watch --resource=nodes`
+  3. `kubectl create clusterrolebinding node-reader-binding --clusterrole=node-reader-role --serviceaccount=default:node-reader`
+  4. `kubectl auth can-i list nodes --as=system:serviceaccount:default:node-reader`
+solution: |
+  # Step 1: Create ServiceAccount
+  kubectl create serviceaccount node-reader
+
+  # Step 2: Create ClusterRole
+  kubectl create clusterrole node-reader-role --verb=get,list,watch --resource=nodes
+
+  # Step 3: Create ClusterRoleBinding
+  kubectl create clusterrolebinding node-reader-binding \
+    --clusterrole=node-reader-role \
+    --serviceaccount=default:node-reader
+
+  # Step 4: Verify
+  kubectl auth can-i list nodes --as=system:serviceaccount:default:node-reader

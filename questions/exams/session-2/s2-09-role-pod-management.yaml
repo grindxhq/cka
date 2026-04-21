@@ -1,0 +1,84 @@
+id: "s2-09-role-pod-management"
+title: "Role - Pod Management in Namespace"
+category: "RBAC"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a Namespace named `dev`.
+
+  Create a Role named `pod-exec-role` in the `dev` namespace with the following permissions:
+  - get pods
+  - list pods
+  - create pods
+  - exec into pods
+
+  Create a ServiceAccount named `dev-user` in the `dev` namespace.
+
+  Create a RoleBinding that binds the `pod-exec-role` to the `dev-user` ServiceAccount.
+setup: []
+validation:
+  - description: "Namespace dev exists"
+    command: "kubectl get namespace dev -o jsonpath='{.metadata.name}'"
+    expect: "dev"
+    match: "exact"
+  - description: "Role pod-exec-role exists"
+    command: "kubectl get role pod-exec-role -n dev -o jsonpath='{.metadata.name}'"
+    expect: "pod-exec-role"
+    match: "exact"
+  - description: "Role has pod get permission"
+    command: "kubectl get role pod-exec-role -n dev -o jsonpath='{.rules[?(@.verbs[*]==\"get\")].resources[0]}' | grep -c pod"
+    expect: "1"
+    match: "contains"
+  - description: "ServiceAccount dev-user exists"
+    command: "kubectl get sa dev-user -n dev -o jsonpath='{.metadata.name}'"
+    expect: "dev-user"
+    match: "exact"
+  - description: "RoleBinding exists"
+    command: "kubectl get rolebinding -n dev -o jsonpath='{.items[0].metadata.name}'"
+    expect: "dev-user-binding"
+    match: "exact"
+hint: |
+  - Namespace is cluster-scoped, Role and RoleBinding are namespace-scoped
+  - Role verbs: "get", "list", "create"
+  - For exec permission, use verb "create" on resource "pods/exec"
+  - RoleBinding references the Role by name
+solution: |
+  # Create Namespace
+  kubectl create namespace dev
+
+  # Create Role
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    name: pod-exec-role
+    namespace: dev
+  rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "create"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  EOF
+
+  # Create ServiceAccount
+  kubectl create serviceaccount dev-user -n dev
+
+  # Create RoleBinding
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: dev-user-binding
+    namespace: dev
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: pod-exec-role
+  subjects:
+  - kind: ServiceAccount
+    name: dev-user
+    namespace: dev
+  EOF

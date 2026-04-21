@@ -1,0 +1,118 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin/universal
+            artifact: "grindx-cka.app"
+          - os: windows-latest
+            platform: windows/amd64
+            artifact: "grindx-cka.exe"
+          - os: ubuntu-latest
+            platform: linux/amd64
+            artifact: "grindx-cka"
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Build
+        run: wails build -platform ${{ matrix.platform }}
+
+      # macOS: create DMG
+      - name: Create DMG
+        if: runner.os == 'macOS'
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "grindx cka" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 80 \
+            --app-drop-link 400 200 \
+            "grindx-cka-macos-universal.dmg" \
+            "build/bin/grindx-cka.app" || true
+          # create-dmg returns 1 if it can't find a signing identity, but the DMG is still created
+          ls -la *.dmg
+
+      # Windows: zip the exe
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "build/bin/grindx-cka.exe" -DestinationPath "grindx-cka-windows-amd64.zip"
+
+      # Linux: tar the binary
+      - name: Package Linux
+        if: runner.os == 'Linux'
+        run: |
+          tar -czvf grindx-cka-linux-amd64.tar.gz -C build/bin grindx-cka
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: |
+            *.dmg
+            *.zip
+            *.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find artifacts -type f | head -20
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/*.dmg
+            artifacts/*.zip
+            artifacts/*.tar.gz

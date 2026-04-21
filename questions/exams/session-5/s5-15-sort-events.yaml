@@ -1,0 +1,39 @@
+id: "s5-15-sort-events"
+title: "Sort and Filter Cluster Events"
+category: "Cluster Architecture"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s5-cluster1"
+task: |
+  Use kubectl to work with cluster events:
+
+  1. List all events in the `kube-system` namespace, sorted by `lastTimestamp`. Save to `/tmp/sorted-events.txt`
+
+  2. Count the number of `Warning` type events across all namespaces. Save just the count number to `/tmp/warning-count.txt`
+setup:
+  - "sleep 1"
+validation:
+  - description: "Sorted events file exists"
+    command: "test -f /tmp/sorted-events.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Warning count file exists"
+    command: "test -f /tmp/warning-count.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Warning count is a number"
+    command: "cat /tmp/warning-count.txt | grep -oE '^[0-9]+$'"
+    expect: ""
+    match: "contains"
+hint: |
+  1. Sort events: `kubectl get events -n kube-system --sort-by=.lastTimestamp`
+  2. Filter warnings: `kubectl get events -A --field-selector type=Warning`
+  3. Count lines: `kubectl get events -A --field-selector type=Warning --no-headers | wc -l`
+solution: |
+  # Sorted events in kube-system
+  kubectl get events -n kube-system --sort-by=.lastTimestamp > /tmp/sorted-events.txt
+  cat /tmp/sorted-events.txt
+
+  # Count warnings across all namespaces
+  kubectl get events -A --field-selector type=Warning --no-headers 2>/dev/null | wc -l | tr -d ' ' > /tmp/warning-count.txt
+  cat /tmp/warning-count.txt

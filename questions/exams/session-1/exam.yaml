@@ -1,0 +1,24 @@
+id: "session-1"
+name: "Session 1: Core Fundamentals"
+description: "18 tasks covering Kubernetes core concepts: pods, deployments, services, ConfigMaps, secrets, storage, scheduling, jobs, RBAC, and troubleshooting."
+duration: 7200
+difficulty: "beginner"
+passScore: 66
+tags: ["core", "fundamentals", "beginner"]
+clusters:
+  - name: cka-s1-cluster1
+    controlPlane: 1
+    workers: 2
+    nodes: 3
+  - name: cka-s1-cluster2
+    controlPlane: 1
+    workers: 2
+    nodes: 3
+  - name: cka-s1-cluster3
+    controlPlane: 1
+    workers: 1
+    nodes: 2
+  - name: cka-s1-cluster4
+    controlPlane: 1
+    workers: 1
+    nodes: 2

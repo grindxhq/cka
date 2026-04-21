@@ -1,0 +1,48 @@
+id: "s1-18-labels-selectors"
+title: "Labels and Selectors"
+category: "Core Concepts"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster1"
+
+task: |
+  Using the `webapp` Deployment from Task 02, add a new label to all running pods:
+  - **Label key:** env
+  - **Label value:** prod
+
+  Use a selector to add the label to all pods with `app=webapp`.
+  Verify the label is applied to all webapp pods and count them.
+
+setup: []
+
+validation:
+  - description: "All webapp pods have env=prod label"
+    command: "kubectl get pods -l app=webapp -o jsonpath='{.items[0].metadata.labels.env}'"
+    expect: "prod"
+    match: "exact"
+  - description: "At least 3 pods have env=prod label"
+    command: "kubectl get pods -l app=webapp,env=prod --no-headers | wc -l | tr -d ' '"
+    expect: "^[3-9]"
+    match: "regex"
+  - description: "Count of labeled pods matches webapp replica count"
+    command: "kubectl get pods -l app=webapp,env=prod --no-headers | wc -l | tr -d ' '"
+    expect: "^[1-9]"
+    match: "regex"
+
+hint: |
+  Use kubectl label pods to add a label to pods selected by a label selector.
+  Command: kubectl label pods -l app=webapp env=prod
+  To check: kubectl get pods -l app=webapp -L env
+  The -L flag shows the env label for all pods.
+  Count pods with: kubectl get pods -l app=webapp,env=prod --no-headers | wc -l
+
+solution: |
+  # Add the env=prod label to all pods with app=webapp
+  kubectl label pods -l app=webapp env=prod
+
+  # Verify the label was applied
+  kubectl get pods -l app=webapp -L env
+
+  # Count pods with both labels
+  kubectl get pods -l app=webapp,env=prod
+  kubectl get pods -l app=webapp,env=prod --no-headers | wc -l

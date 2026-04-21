@@ -1,0 +1,68 @@
+id: "s1-10-job"
+title: "Job"
+category: "Workloads"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s1-cluster2"
+
+task: |
+  Create a Job named `batch-job` with the following specifications:
+  - **Image:** busybox:1.36
+  - **Command:** Prints "Processing item X" for items 1-5 with a 2-second sleep between each
+  - **Completions:** 5
+  - **Parallelism:** 2
+  - **Restart Policy:** OnFailure
+
+  Verify the Job completes successfully with all 5 completions.
+
+setup: []
+
+validation:
+  - description: "Job batch-job exists"
+    command: "kubectl get job batch-job -o jsonpath='{.metadata.name}'"
+    expect: "batch-job"
+    match: "exact"
+  - description: "Job completions is 5"
+    command: "kubectl get job batch-job -o jsonpath='{.spec.completions}'"
+    expect: "5"
+    match: "exact"
+  - description: "Job parallelism is 2"
+    command: "kubectl get job batch-job -o jsonpath='{.spec.parallelism}'"
+    expect: "2"
+    match: "exact"
+  - description: "Job image is busybox:1.36"
+    command: "kubectl get job batch-job -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "busybox:1.36"
+    match: "exact"
+  - description: "Job restart policy is OnFailure"
+    command: "kubectl get job batch-job -o jsonpath='{.spec.template.spec.restartPolicy}'"
+    expect: "OnFailure"
+    match: "exact"
+  - description: "Job has 5 successful completions"
+    command: "kubectl get job batch-job -o jsonpath='{.status.succeeded}'"
+    expect: "5"
+    match: "exact"
+
+hint: |
+  Create a Job manifest with spec.completions=5, spec.parallelism=2.
+  Use a command that loops 5 times and sleeps 2 seconds: sh -c 'for i in 1 2 3 4 5; do echo "Processing item $i"; sleep 2; done'
+  Set restartPolicy: OnFailure in the pod template.
+
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: batch-job
+  spec:
+    completions: 5
+    parallelism: 2
+    template:
+      spec:
+        containers:
+        - name: processor
+          image: busybox:1.36
+          command: ["/bin/sh", "-c", "echo Processing item; sleep 2"]
+        restartPolicy: OnFailure
+  EOF
+  kubectl wait --for=condition=complete job/batch-job --timeout=120s

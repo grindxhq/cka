@@ -1,0 +1,54 @@
+id: "s2-03-taints-tolerations"
+title: "Taints and Tolerations"
+category: "Pod Scheduling"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s2-cluster1"
+task: |
+  Apply a taint to a worker node with the effect `NoSchedule`, key `dedicated`, and value `special`.
+
+  Then create a Pod named `special-app` using the image `nginx:1.24` that tolerates this taint.
+
+  The Pod should be scheduled on the tainted node. Other pods without the toleration should not be scheduled there.
+setup:
+  - "WORKER=$(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}') && kubectl taint nodes $WORKER dedicated=special:NoSchedule"
+validation:
+  - description: "Pod special-app exists"
+    command: "kubectl get pod special-app -o jsonpath='{.metadata.name}'"
+    expect: "special-app"
+    match: "exact"
+  - description: "Pod is Running"
+    command: "kubectl get pod special-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Pod has toleration for dedicated=special"
+    command: "kubectl get pod special-app -o jsonpath='{.spec.tolerations[0].key}'"
+    expect: "dedicated"
+    match: "exact"
+hint: |
+  - Taint format: `key=value:effect`
+  - Use `NoSchedule` effect
+  - Pod tolerations must match the taint key and effect
+  - The operator for toleration should be `Equal`
+solution: |
+  # Apply the taint to a worker node
+  kubectl taint nodes $(kubectl get nodes --no-headers -l '!node-role.kubernetes.io/control-plane' -o jsonpath='{.items[0].metadata.name}') dedicated=special:NoSchedule --overwrite
+
+  # Create the Pod with toleration
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: special-app
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:1.24
+    tolerations:
+    - key: dedicated
+      operator: Equal
+      value: special
+      effect: NoSchedule
+  EOF
+
+  kubectl wait --for=condition=Ready pod/special-app --timeout=60s

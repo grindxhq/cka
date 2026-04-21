@@ -1,0 +1,58 @@
+id: "s5-04-csr-approve"
+title: "Approve a CertificateSigningRequest"
+category: "Cluster Architecture"
+difficulty: "hard"
+weight: 8
+context: "kind-cka-s5-cluster1"
+task: |
+  A new user named `dev-user` needs access to the cluster. A CertificateSigningRequest (CSR) has been submitted but is pending approval.
+
+  Your tasks:
+  1. List the pending CSRs
+  2. Approve the CSR named `dev-user-csr`
+  3. Verify the CSR is approved
+setup:
+  - |
+    docker exec cka-s5-cluster1-control-plane bash -c '
+      export KUBECONFIG=/etc/kubernetes/admin.conf &&
+      openssl genrsa -out /tmp/dev-user.key 2048 2>/dev/null &&
+      openssl req -new -key /tmp/dev-user.key -out /tmp/dev-user.csr -subj "/CN=dev-user/O=developers" 2>/dev/null &&
+      CSR_CONTENT=$(cat /tmp/dev-user.csr | base64 | tr -d "\n") &&
+      kubectl apply -f - <<EOF
+    apiVersion: certificates.k8s.io/v1
+    kind: CertificateSigningRequest
+    metadata:
+      name: dev-user-csr
+    spec:
+      request: ${CSR_CONTENT}
+      signerName: kubernetes.io/kube-apiserver-client
+      usages:
+      - client auth
+    EOF'
+  - "sleep 2"
+validation:
+  - description: "CSR exists"
+    command: "kubectl get csr dev-user-csr -o jsonpath='{.metadata.name}'"
+    expect: "dev-user-csr"
+    match: "exact"
+  - description: "CSR is approved"
+    command: "kubectl get csr dev-user-csr -o jsonpath='{.status.conditions[0].type}'"
+    expect: "Approved"
+    match: "exact"
+hint: |
+  1. List CSRs: `kubectl get csr` (run from your jump host)
+  2. Inspect the CSR: `kubectl describe csr dev-user-csr`
+  3. Approve it: `kubectl certificate approve dev-user-csr`
+  4. Verify: `kubectl get csr dev-user-csr`
+solution: |
+  # Step 1: List pending CSRs (from jump host)
+  kubectl get csr
+
+  # Step 2: Inspect the CSR details
+  kubectl describe csr dev-user-csr
+
+  # Step 3: Approve the CSR
+  kubectl certificate approve dev-user-csr
+
+  # Step 4: Verify approval
+  kubectl get csr dev-user-csr

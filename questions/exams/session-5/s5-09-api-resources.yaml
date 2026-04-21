@@ -1,0 +1,44 @@
+id: "s5-09-api-resources"
+title: "Explore API Resources and Versions"
+category: "Cluster Architecture"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s5-cluster1"
+task: |
+  Explore the Kubernetes API to answer the following:
+
+  1. List all API resources that support the `list` verb and are `namespaced`. Save the output to `/tmp/namespaced-list-resources.txt`
+
+  2. Find which API group and version the `CronJob` resource belongs to. Save just the `apiVersion` (e.g., `batch/v1`) to `/tmp/cronjob-version.txt`
+setup:
+  - "sleep 1"
+validation:
+  - description: "Namespaced resources file exists"
+    command: "test -f /tmp/namespaced-list-resources.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "File contains pods"
+    command: "grep 'pods' /tmp/namespaced-list-resources.txt"
+    expect: "pods"
+    match: "contains"
+  - description: "CronJob version file exists"
+    command: "test -f /tmp/cronjob-version.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "CronJob version is correct"
+    command: "cat /tmp/cronjob-version.txt"
+    expect: "batch/v1"
+    match: "contains"
+hint: |
+  1. Use `kubectl api-resources` with `--verbs=list` and `--namespaced=true` flags
+  2. Use `kubectl api-resources` with `--sort-by=name` and grep for CronJob
+  3. Or use `kubectl explain cronjob` to see the API version
+solution: |
+  # Query 1: Namespaced resources supporting list
+  kubectl api-resources --verbs=list --namespaced=true > /tmp/namespaced-list-resources.txt
+  cat /tmp/namespaced-list-resources.txt
+
+  # Query 2: CronJob API version
+  kubectl api-resources | grep -i cronjob
+  echo "batch/v1" > /tmp/cronjob-version.txt
+  cat /tmp/cronjob-version.txt

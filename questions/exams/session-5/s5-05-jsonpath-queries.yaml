@@ -1,0 +1,48 @@
+id: "s5-05-jsonpath-queries"
+title: "JSONPath Queries"
+category: "Cluster Architecture"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s5-cluster1"
+task: |
+  Use JSONPath queries to extract specific information from the cluster:
+
+  1. List all node names and their Internal IP addresses. Save the output to `/tmp/node-ips.txt`
+     Format: `<node-name> <internal-ip>` (one per line)
+
+  2. List all pods in `kube-system` namespace showing `<pod-name> <container-image>`. Save to `/tmp/system-pods.txt`
+setup:
+  - "sleep 1"
+validation:
+  - description: "Node IPs file exists"
+    command: "test -f /tmp/node-ips.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Node IPs file has content"
+    command: "cat /tmp/node-ips.txt | grep -c '.' || true"
+    expect: "^[1-9]"
+    match: "regex"
+  - description: "System pods file exists"
+    command: "test -f /tmp/system-pods.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "System pods file has content"
+    command: "cat /tmp/system-pods.txt | grep -c 'kube' || true"
+    expect: "^[1-9]"
+    match: "regex"
+hint: |
+  1. For node IPs: `kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name} {.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}'`
+  2. For system pods: `kubectl get pods -n kube-system -o jsonpath='{range .items[*]}{.metadata.name} {.spec.containers[0].image}{"\n"}{end}'`
+  3. Redirect output with `> /tmp/filename.txt`
+solution: |
+  # Query 1: Node names and Internal IPs
+  kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name} {.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}' > /tmp/node-ips.txt
+
+  # Verify
+  cat /tmp/node-ips.txt
+
+  # Query 2: System pods with images
+  kubectl get pods -n kube-system -o jsonpath='{range .items[*]}{.metadata.name} {.spec.containers[0].image}{"\n"}{end}' > /tmp/system-pods.txt
+
+  # Verify
+  cat /tmp/system-pods.txt

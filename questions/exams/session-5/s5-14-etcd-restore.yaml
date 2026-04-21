@@ -1,0 +1,66 @@
+id: "s5-14-etcd-restore"
+title: "etcd Backup and Restore"
+category: "Cluster Architecture"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s5-cluster2"
+task: |
+  Perform an etcd backup and restore operation on the control-plane node of cluster2.
+
+  1. Create a snapshot of the etcd database and save it to `/backup/pre-restore.db`
+  2. Create a test namespace called `restore-test` to prove data exists
+  3. Restore the etcd snapshot to a new data directory `/var/lib/etcd-restored`
+  4. Verify the restore was successful by checking the snapshot status
+
+  Note: You do NOT need to actually reconfigure etcd to use the restored directory — just verify the restore command completes successfully.
+setup:
+  - "docker exec cka-s5-cluster2-control-plane mkdir -p /backup"
+  - "docker exec cka-s5-cluster2-control-plane bash -c 'command -v etcdctl >/dev/null 2>&1 || { ETCD_VER=v3.5.12 && ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl; }'"
+  - "sleep 2"
+validation:
+  - description: "Backup file exists"
+    command: "docker exec cka-s5-cluster2-control-plane test -f /backup/pre-restore.db && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "Backup is valid"
+    command: "docker exec cka-s5-cluster2-control-plane test -s /backup/pre-restore.db && echo 'valid'"
+    expect: "valid"
+    match: "exact"
+  - description: "Restored data directory exists"
+    command: "docker exec cka-s5-cluster2-control-plane test -d /var/lib/etcd-restored && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+hint: |
+  1. Access the node: `ssh cka-s5-cluster2-control-plane`
+  2. Set env: `export ETCDCTL_API=3`
+  3. Find certs: check `/etc/kubernetes/pki/etcd/`
+  4. Backup: `etcdctl snapshot save /backup/pre-restore.db --cacert=... --cert=... --key=...`
+  5. Restore: `etcdctl snapshot restore /backup/pre-restore.db --data-dir=/var/lib/etcd-restored`
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s5-cluster2-control-plane
+
+  # Set environment variables
+  export ETCDCTL_API=3
+  export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
+  export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/server.crt
+  export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key
+  export ETCDCTL_ENDPOINTS=127.0.0.1:2379
+
+  # Create backup
+  etcdctl snapshot save /backup/pre-restore.db
+
+  # Verify backup
+  etcdctl snapshot status /backup/pre-restore.db
+
+  # Restore to new directory
+  etcdctl snapshot restore /backup/pre-restore.db --data-dir=/var/lib/etcd-restored
+
+  # Verify restored directory
+  ls /var/lib/etcd-restored/
+
+  # Exit the node
+  exit
+
+  # Create test namespace (from jump host, on cluster2)
+  kubectl --context kind-cka-s5-cluster2 create namespace restore-test

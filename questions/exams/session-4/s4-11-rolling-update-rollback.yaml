@@ -1,0 +1,58 @@
+id: "s4-11-rolling-update-rollback"
+title: "Rolling Update Rollback"
+category: "Deployment Management"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s4-cluster1"
+task: |
+  A deployment was updated to a broken image version, and now the rollout is stuck or the new pods are failing.
+
+  Your task is to:
+  1. Check the deployment rollout history
+  2. Identify the broken update
+  3. Rollback to the previous working version
+  4. Verify the deployment is stable with the correct image
+
+  The deployment name is "web-app".
+setup:
+  - "kubectl create deployment web-app --image=nginx:1.21 -n default"
+  - "sleep 3"
+  - "kubectl set image deployment/web-app nginx=nginx:broken-image -n default"
+  - "sleep 3"
+validation:
+  - description: "Deployment exists"
+    command: "kubectl get deployment web-app -n default -o jsonpath='{.metadata.name}'"
+    expect: "web-app"
+    match: "exact"
+  - description: "Deployment is using correct image"
+    command: "kubectl get deployment web-app -n default -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "nginx"
+    match: "contains"
+  - description: "Image is not the broken one"
+    command: "kubectl get deployment web-app -n default -o jsonpath='{.spec.template.spec.containers[0].image}'"
+    expect: "broken-image"
+    match: "not-contains"
+  - description: "Pods are running"
+    command: "kubectl get pods -n default -l app=web-app -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | sort | uniq"
+    expect: "Running"
+    match: "exact"
+hint: |
+  1. Check deployment status: `kubectl get deployment web-app -n default`
+  2. Check rollout history: `kubectl rollout history deployment/web-app -n default`
+  3. Identify the working revision
+  4. Rollback to previous revision: `kubectl rollout undo deployment/web-app -n default`
+  5. Verify deployment is stable
+solution: |
+  # Step 1: Check deployment and rollout status
+  kubectl get deployment web-app -n default
+
+  # Step 2: Check rollout history
+  kubectl rollout history deployment/web-app -n default
+
+  # Step 3: Rollback to previous revision
+  kubectl rollout undo deployment/web-app -n default
+
+  # Step 4: Verify the rollback
+  kubectl get deployment web-app -n default -o yaml
+  kubectl get pods -n default -l app=web-app
+  kubectl rollout status deployment/web-app -n default --timeout=60s

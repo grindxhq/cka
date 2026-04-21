@@ -1,0 +1,58 @@
+id: "s3-11-ingress-resource"
+title: "Create Ingress Resource"
+category: "networking"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s3-cluster2"
+task: |
+  Create an Ingress resource named `web-ingress` in the default namespace that:
+  - Routes HTTP traffic for `app.local` to the `web-svc` service on port 80
+  - Handles the root path `/` for the host
+
+  Before creating the Ingress, ensure the backend service `web-svc` is created and has valid endpoints.
+setup:
+  - "kubectl -n default create deployment web-app --image=nginx:1.24"
+  - "kubectl -n default expose deployment web-app --name=web-svc --port=80 --target-port=80"
+validation:
+  - description: "Ingress exists"
+    command: "kubectl -n default get ingress web-ingress"
+    expect: "web-ingress"
+    match: "contains"
+  - description: "Ingress has correct backend service"
+    command: "kubectl -n default get ingress web-ingress -o yaml"
+    expect: "web-svc"
+    match: "contains"
+  - description: "Ingress has correct host"
+    command: "kubectl -n default get ingress web-ingress -o yaml"
+    expect: "app.local"
+    match: "contains"
+  - description: "Ingress specifies port 80"
+    command: "kubectl -n default get ingress web-ingress -o jsonpath='{.spec.rules[0].http.paths[0].backend.service.port.number}'"
+    expect: "80"
+    match: "exact"
+hint: |
+  Create an Ingress resource with:
+  - metadata.name: web-ingress
+  - spec.rules with host: app.local
+  - spec.rules[].http.paths with path: / and pathType: Prefix
+  - spec.rules[].http.paths[].backend with service.name: web-svc and service.port.number: 80
+solution: |
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: web-ingress
+    namespace: default
+  spec:
+    rules:
+      - host: app.local
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: web-svc
+                  port:
+                    number: 80
+  EOF

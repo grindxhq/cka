@@ -1,0 +1,53 @@
+id: "s4-06-imagepullbackoff"
+title: "Fix ImagePullBackOff"
+category: "Container & Image Management"
+difficulty: "medium"
+weight: 7
+context: "kind-cka-s4-cluster2"
+task: |
+  A pod has been created that references a private registry image that doesn't exist: `myregistry.example.com/app:latest`.
+
+  The pod is stuck in ImagePullBackOff state because it cannot pull the image.
+
+  Your task is to:
+  1. Identify the pod in ImagePullBackOff state
+  2. Update the pod to use a valid public image (e.g., `nginx:latest`)
+  3. Verify the pod transitions to Running state
+
+  Note: You may need to delete and recreate the pod or create a new one with valid image.
+setup:
+  - "kubectl run broken-image --image=myregistry.example.com/app:latest -n default"
+  - "sleep 3"
+validation:
+  - description: "Pod exists"
+    command: "kubectl get pod broken-image -n default -o jsonpath='{.metadata.name}'"
+    expect: "broken-image"
+    match: "exact"
+  - description: "Pod is running"
+    command: "kubectl get pod broken-image -n default -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Image is from public registry"
+    command: "kubectl get pod broken-image -n default -o jsonpath='{.spec.containers[0].image}'"
+    expect: "myregistry"
+    match: "not-contains"
+hint: |
+  1. Check the pod status: `kubectl get pods`
+  2. See pod details: `kubectl describe pod broken-image`
+  3. Identify ImagePullBackOff status
+  4. Delete the pod: `kubectl delete pod broken-image`
+  5. Recreate with valid public image: `kubectl run broken-image --image=nginx:latest`
+  6. Verify it's running
+solution: |
+  # Step 1: Check pod status
+  kubectl get pods -n default
+  kubectl describe pod broken-image -n default
+
+  # Step 2: Delete the broken pod and wait for termination
+  kubectl delete pod broken-image -n default --wait=true
+
+  # Step 3: Recreate with valid public image
+  kubectl run broken-image --image=nginx:latest -n default
+
+  # Step 4: Wait for pod to be ready
+  kubectl wait --for=condition=Ready pod/broken-image -n default --timeout=60s

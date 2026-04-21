@@ -1,0 +1,53 @@
+id: "s2-12-troubleshoot-crashloopbackoff"
+title: "Troubleshoot CrashLoopBackOff Pod"
+category: "Troubleshooting"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s2-cluster1"
+task: |
+  A Pod named `broken-app` has been created with an incorrect command that causes it to crash and enter CrashLoopBackOff state.
+
+  Your task is to:
+  1. Identify the issue using kubectl logs and/or describe commands
+  2. Fix the Pod by updating the image or command to a working version
+  3. Verify the Pod is in Running state
+
+  Hint: The Pod is using image `busybox:1.35` with an invalid command.
+setup:
+  - "kubectl run broken-app --image=busybox:1.35 -- /bin/sh -c 'exit 1'"
+validation:
+  - description: "Pod broken-app exists"
+    command: "kubectl get pod broken-app -o jsonpath='{.metadata.name}'"
+    expect: "broken-app"
+    match: "exact"
+  - description: "Pod is Running"
+    command: "kubectl get pod broken-app -o jsonpath='{.status.phase}'"
+    expect: "Running"
+    match: "exact"
+  - description: "Container has valid command"
+    command: "kubectl get pod broken-app -o jsonpath='{.spec.containers[0].command[0]}'"
+    expect: "sh"
+    match: "contains"
+hint: |
+  - Use `kubectl describe pod broken-app` to see the status and events
+  - Use `kubectl logs broken-app` to see container logs
+  - Use `kubectl delete pod broken-app` and recreate it with a working command
+  - Or use `kubectl set image` if it's a Deployment
+  - A working command example: `/bin/sh -c 'sleep 3600'`
+solution: |
+  # Delete the broken pod
+  kubectl delete pod broken-app
+
+  # Create a working pod with the same name
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: broken-app
+  spec:
+    containers:
+    - name: broken-app
+      image: busybox:1.35
+      command: ["/bin/sh"]
+      args: ["-c", "sleep 3600"]
+  EOF

@@ -1,0 +1,44 @@
+id: "s5-06-custom-columns"
+title: "Custom Columns Output"
+category: "Cluster Architecture"
+difficulty: "easy"
+weight: 4
+context: "kind-cka-s5-cluster1"
+task: |
+  Use `kubectl` custom-columns output to display node information.
+
+  Run a command that shows all nodes with the following columns:
+  - NODE_NAME
+  - STATUS (from conditions where type=Ready)
+  - OS_IMAGE
+  - KERNEL
+
+  Save the exact output (including header) to `/tmp/node-info.txt`.
+setup:
+  - "sleep 1"
+validation:
+  - description: "Output file exists"
+    command: "test -f /tmp/node-info.txt && echo 'exists'"
+    expect: "exists"
+    match: "exact"
+  - description: "File contains NODE_NAME header"
+    command: "head -1 /tmp/node-info.txt"
+    expect: "NODE_NAME"
+    match: "contains"
+  - description: "File contains node data"
+    command: "wc -l < /tmp/node-info.txt | tr -d ' '"
+    expect: "^[2-9]"
+    match: "regex"
+hint: |
+  Use `kubectl get nodes` with `-o custom-columns=` flag:
+  ```
+  kubectl get nodes -o custom-columns=\
+    NODE_NAME:.metadata.name,\
+    STATUS:.status.conditions[-1].type,\
+    OS_IMAGE:.status.nodeInfo.osImage,\
+    KERNEL:.status.nodeInfo.kernelVersion
+  ```
+solution: |
+  kubectl get nodes -o custom-columns=NODE_NAME:.metadata.name,STATUS:.status.conditions[-1].type,OS_IMAGE:.status.nodeInfo.osImage,KERNEL:.status.nodeInfo.kernelVersion > /tmp/node-info.txt
+
+  cat /tmp/node-info.txt

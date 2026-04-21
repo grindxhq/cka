@@ -1,0 +1,32 @@
+id: "s3-08-pod-security-standards"
+title: "Pod Security Standards Enforcement"
+category: "security"
+difficulty: "medium"
+weight: 6
+context: "kind-cka-s3-cluster2"
+task: |
+  Create a new namespace named `restricted-ns` and apply Pod Security Standards with the enforce mode set to `restricted`.
+
+  This means all pods created in this namespace must comply with the restricted Pod Security Standard.
+
+  Verify the namespace is created with the correct labels.
+setup: []
+validation:
+  - description: "Namespace exists"
+    command: "kubectl get namespace restricted-ns"
+    expect: "restricted-ns"
+    match: "contains"
+  - description: "Pod Security enforce label set to restricted"
+    command: "kubectl get namespace restricted-ns -o yaml"
+    expect: "pod-security.kubernetes.io/enforce: restricted"
+    match: "contains"
+hint: |
+  Create a namespace with labels for Pod Security Standards enforcement.
+
+  Use kubectl create namespace and kubectl label, or apply a manifest with labels:
+  pod-security.kubernetes.io/enforce: restricted
+  pod-security.kubernetes.io/audit: restricted
+  pod-security.kubernetes.io/warn: restricted
+solution: |
+  kubectl create namespace restricted-ns
+  kubectl label namespace restricted-ns pod-security.kubernetes.io/enforce=restricted pod-security.kubernetes.io/audit=restricted pod-security.kubernetes.io/warn=restricted

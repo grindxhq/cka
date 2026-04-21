@@ -1,0 +1,183 @@
+id: "s4-19-full-stack-deploy"
+title: "Final Challenge - Deploy Full Stack"
+category: "Complete Application Deployment"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s4-cluster1"
+task: |
+  You need to deploy a complete 3-tier application with proper isolation and networking.
+
+  Architecture:
+  - Frontend (nginx) in namespace "frontend"
+  - Backend (busybox HTTP server) in namespace "backend"
+  - Database (postgres) in namespace "database"
+
+  Requirements:
+  1. Create three namespaces: frontend, backend, database
+  2. Deploy nginx in frontend namespace, expose on port 80
+  3. Deploy busybox with HTTP server (port 8080) in backend namespace
+  4. Deploy postgres in database namespace
+  5. Create Services for all components
+  6. Create NetworkPolicies:
+     - Frontend can reach Backend
+     - Backend can reach Database
+     - Database pods only accept from Backend
+  7. Create RBAC for each namespace (ServiceAccount with minimal permissions)
+
+  Validation will check:
+  - All namespaces exist
+  - All services are created
+  - NetworkPolicies are in place
+  - All pods are running
+setup:
+  - "sleep 1"
+validation:
+  - description: "frontend namespace exists"
+    command: "kubectl get namespace frontend -o jsonpath='{.metadata.name}'"
+    expect: "frontend"
+    match: "exact"
+  - description: "backend namespace exists"
+    command: "kubectl get namespace backend -o jsonpath='{.metadata.name}'"
+    expect: "backend"
+    match: "exact"
+  - description: "database namespace exists"
+    command: "kubectl get namespace database -o jsonpath='{.metadata.name}'"
+    expect: "database"
+    match: "exact"
+  - description: "frontend service exists"
+    command: "kubectl get service frontend-svc -n frontend -o jsonpath='{.metadata.name}'"
+    expect: "frontend-svc"
+    match: "exact"
+  - description: "backend service exists"
+    command: "kubectl get service backend-svc -n backend -o jsonpath='{.metadata.name}'"
+    expect: "backend-svc"
+    match: "exact"
+  - description: "database service exists"
+    command: "kubectl get service database-svc -n database -o jsonpath='{.metadata.name}'"
+    expect: "database-svc"
+    match: "exact"
+  - description: "frontend pods are running"
+    command: "kubectl get pods -n frontend -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | grep -c 'Running' | tr -d ' '"
+    expect: "^[1-9]"
+    match: "regex"
+  - description: "backend pods are running"
+    command: "kubectl get pods -n backend -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | grep -c 'Running' | tr -d ' '"
+    expect: "^[1-9]"
+    match: "regex"
+  - description: "database pods are running"
+    command: "kubectl get pods -n database -o jsonpath='{.items[*].status.phase}' | tr ' ' '\\n' | grep -c 'Running' | tr -d ' '"
+    expect: "^[1-9]"
+    match: "regex"
+  - description: "NetworkPolicies exist"
+    command: "total=0; for ns in frontend backend database; do count=$(kubectl get networkpolicy -n $ns -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w | tr -d ' '); total=$((total + count)); done; echo $total"
+    expect: "^[1-9]"
+    match: "regex"
+hint: |
+  1. Create three namespaces
+  2. Deploy nginx frontend: `kubectl create deployment frontend --image=nginx -n frontend`
+  3. Deploy backend: `kubectl create deployment backend --image=hashicorp/http-echo -n backend -- -listen=:8080 -text="backend"`
+  4. Deploy postgres with POSTGRES_PASSWORD env: `kubectl create deployment database --image=postgres:13 -n database` (set env POSTGRES_PASSWORD)
+  5. Create services for each component
+  6. Set environment variables for cross-namespace communication
+  7. Create NetworkPolicies for traffic control
+  8. Create RBAC resources
+solution: |
+  # Step 1: Create namespaces
+  kubectl create namespace frontend
+  kubectl create namespace backend
+  kubectl create namespace database
+
+  # Step 2: Deploy Frontend
+  kubectl create deployment frontend --image=nginx -n frontend
+  kubectl expose deployment frontend --name=frontend-svc --port=80 --type=ClusterIP -n frontend
+
+  # Step 3: Deploy Backend (http-echo is a lightweight HTTP server)
+  kubectl create deployment backend --image=hashicorp/http-echo -n backend -- -listen=:8080 -text="backend"
+  kubectl expose deployment backend --name=backend-svc --port=8080 --type=ClusterIP -n backend
+
+  # Step 4: Deploy Database
+  cat <<EOF | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: database-pod
+    namespace: database
+    labels:
+      app: database
+  spec:
+    containers:
+      - name: postgres
+        image: postgres:13
+        env:
+          - name: POSTGRES_PASSWORD
+            value: "secret"
+  EOF
+  kubectl expose pod database-pod --name=database-svc --port=5432 -n database
+  kubectl wait --for=condition=Ready pod/database-pod -n database --timeout=120s
+
+  # Step 5: Create ServiceAccounts for RBAC
+  kubectl create serviceaccount frontend-sa -n frontend
+  kubectl create serviceaccount backend-sa -n backend
+  kubectl create serviceaccount database-sa -n database
+
+  # Step 6: Create NetworkPolicy - Frontend to Backend
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-frontend-to-backend
+    namespace: backend
+  spec:
+    podSelector:
+      matchLabels:
+        app: backend
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: frontend
+        ports:
+          - protocol: TCP
+            port: 8080
+  EOF
+
+  # Step 7: Create NetworkPolicy - Backend to Database
+  cat <<EOF | kubectl apply -f -
+  apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-backend-to-database
+    namespace: database
+  spec:
+    podSelector:
+      matchLabels:
+        app: database
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: backend
+        ports:
+          - protocol: TCP
+            port: 5432
+  EOF
+
+  # Step 8: Label namespaces for NetworkPolicy
+  kubectl label namespace frontend name=frontend
+  kubectl label namespace backend name=backend
+  kubectl label namespace database name=database
+
+  # Step 9: Verify deployment
+  kubectl get namespaces
+  kubectl get pods -n frontend
+  kubectl get pods -n backend
+  kubectl get pods -n database
+  kubectl get services -n frontend
+  kubectl get services -n backend
+  kubectl get services -n database
+  kubectl get networkpolicy -n backend
+  kubectl get networkpolicy -n database

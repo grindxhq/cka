@@ -1,0 +1,100 @@
+id: "s2-06-statefulset-persistent-storage"
+title: "StatefulSet with Persistent Storage"
+category: "Storage"
+difficulty: "hard"
+weight: 7
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a StatefulSet named `database` with the following specifications:
+  - Image: `postgres:15`
+  - Replicas: 3
+  - Environment variable: `POSTGRES_PASSWORD=mysecretpassword`
+  - Headless Service named `database-svc`
+  - volumeClaimTemplates with a 1Gi PersistentVolumeClaim per replica
+  - Storage class: `standard` (default)
+
+  The StatefulSet pods should be named `database-0`, `database-1`, and `database-2`, each with its own persistent storage.
+setup: []
+validation:
+  - description: "StatefulSet database exists"
+    command: "kubectl get statefulset database -o jsonpath='{.metadata.name}'"
+    expect: "database"
+    match: "exact"
+  - description: "StatefulSet has 3 replicas"
+    command: "kubectl get statefulset database -o jsonpath='{.spec.replicas}'"
+    expect: "3"
+    match: "exact"
+  - description: "Headless service database-svc exists"
+    command: "kubectl get service database-svc -o jsonpath='{.spec.clusterIP}'"
+    expect: "None"
+    match: "exact"
+  - description: "volumeClaimTemplates exist"
+    command: "kubectl get statefulset database -o jsonpath='{.spec.volumeClaimTemplates[0].metadata.name}'"
+    expect: "data"
+    match: "exact"
+  - description: "Three PVCs are created"
+    command: "kubectl get pvc -l app=database -o name | wc -l"
+    expect: "3"
+    match: "exact"
+hint: |
+  - Headless service has clusterIP: None
+  - volumeClaimTemplates generates PVCs automatically
+  - Pod management policy should be OrderedReady (default)
+  - Storage request is 1Gi
+solution: |
+  # Create Headless Service
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: database-svc
+  spec:
+    clusterIP: None
+    selector:
+      app: database
+    ports:
+    - port: 5432
+      name: postgres
+  EOF
+
+  # Create StatefulSet
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    name: database
+  spec:
+    serviceName: database-svc
+    replicas: 3
+    selector:
+      matchLabels:
+        app: database
+    template:
+      metadata:
+        labels:
+          app: database
+      spec:
+        containers:
+        - name: postgres
+          image: postgres:15
+          env:
+          - name: POSTGRES_PASSWORD
+            value: "mysecretpassword"
+          ports:
+          - containerPort: 5432
+            name: postgres
+          volumeMounts:
+          - name: data
+            mountPath: /var/lib/postgresql/data
+    volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 1Gi
+  EOF
+  kubectl rollout status statefulset/database --timeout=180s

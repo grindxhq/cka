@@ -1,0 +1,108 @@
+id: "s2-17-resource-quota-enforcement"
+title: "Resource Quota Enforcement"
+category: "Resource Management"
+difficulty: "medium"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  Create a Namespace named `limited`.
+
+  Create a ResourceQuota named `quota-limited` in the `limited` namespace with the following constraints:
+  - Maximum 2 pods
+  - Maximum 500m CPU
+  - Maximum 512Mi memory
+
+  Create two Pods within the quota limits:
+  - Pod 1: `app1` using `nginx:1.24` (requests: 200m CPU, 256Mi memory)
+  - Pod 2: `app2` using `nginx:1.24` (requests: 200m CPU, 256Mi memory)
+
+  Verify that the quota is enforced and a third pod cannot be created due to quota limits.
+setup: []
+validation:
+  - description: "Namespace limited exists"
+    command: "kubectl get namespace limited -o jsonpath='{.metadata.name}'"
+    expect: "limited"
+    match: "exact"
+  - description: "ResourceQuota quota-limited exists"
+    command: "kubectl get resourcequota quota-limited -n limited -o jsonpath='{.metadata.name}'"
+    expect: "quota-limited"
+    match: "exact"
+  - description: "Pod limit is 2"
+    command: "kubectl get resourcequota quota-limited -n limited -o jsonpath='{.spec.hard.pods}'"
+    expect: "2"
+    match: "exact"
+  - description: "CPU limit is 500m"
+    command: "kubectl get resourcequota quota-limited -n limited -o jsonpath='{.spec.hard.requests\\.cpu}'"
+    expect: "500m"
+    match: "exact"
+  - description: "Memory limit is 512Mi"
+    command: "kubectl get resourcequota quota-limited -n limited -o jsonpath='{.spec.hard.requests\\.memory}'"
+    expect: "512Mi"
+    match: "exact"
+  - description: "Pod app1 exists in limited namespace"
+    command: "kubectl get pod app1 -n limited -o jsonpath='{.metadata.name}'"
+    expect: "app1"
+    match: "exact"
+  - description: "Pod app2 exists in limited namespace"
+    command: "kubectl get pod app2 -n limited -o jsonpath='{.metadata.name}'"
+    expect: "app2"
+    match: "exact"
+hint: |
+  - Create namespace first
+  - ResourceQuota uses hard field for limits
+  - Pod resource requests must match the validation test expectations
+  - Pods must specify resource requests to count towards quota
+solution: |
+  # Create Namespace
+  kubectl create namespace limited
+
+  # Create ResourceQuota
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: quota-limited
+    namespace: limited
+  spec:
+    hard:
+      pods: "2"
+      requests.cpu: "500m"
+      requests.memory: "512Mi"
+  EOF
+
+  # Create Pod app1
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: app1
+    namespace: limited
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:1.24
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+  EOF
+
+  # Create Pod app2
+  cat <<'EOF' | kubectl apply -f -
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: app2
+    namespace: limited
+  spec:
+    containers:
+    - name: nginx
+      image: nginx:1.24
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+  EOF
+
+  # Verify quota usage
+  kubectl describe resourcequota quota-limited -n limited

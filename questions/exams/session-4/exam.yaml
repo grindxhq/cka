@@ -1,0 +1,16 @@
+id: "session-4"
+name: "Session 4: Expert & Chaos Engineering"
+description: "19 tasks covering complex troubleshooting, chaos scenarios, security hardening, and multi-component failure recovery."
+duration: 7200
+difficulty: "expert"
+passScore: 66
+tags: ["chaos", "troubleshooting", "security", "expert"]
+clusters:
+  - name: cka-s4-cluster1
+    controlPlane: 1
+    workers: 2
+    nodes: 3
+  - name: cka-s4-cluster2
+    controlPlane: 1
+    workers: 2
+    nodes: 3

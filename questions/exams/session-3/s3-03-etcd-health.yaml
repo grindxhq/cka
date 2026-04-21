@@ -1,0 +1,30 @@
+id: "s3-03-etcd-health"
+title: "etcd Health Check"
+category: "etcd"
+difficulty: "easy"
+weight: 5
+context: "kind-cka-s3-cluster1"
+task: |
+  Verify the health status of the etcd cluster and save the output to `/tmp/etcd-health.txt` inside the control-plane node.
+
+  The output should indicate that the cluster is healthy.
+setup:
+  - "docker exec cka-s3-cluster1-control-plane bash -c 'command -v etcdctl >/dev/null 2>&1 || { ETCD_VER=v3.5.12 && ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz | tar xz --strip-components=1 -C /usr/local/bin etcd-${ETCD_VER}-linux-${ARCH}/etcdctl; }'"
+validation:
+  - description: "Health check file exists"
+    command: "docker exec cka-s3-cluster1-control-plane cat /tmp/etcd-health.txt"
+    expect: "healthy"
+    match: "contains"
+hint: |
+  SSH into the control-plane node and use ETCDCTL_API=3 etcdctl endpoint health with the correct certificates and endpoint.
+
+  Redirect the output to /tmp/etcd-health.txt.
+solution: |
+  # SSH into the control-plane node
+  ssh cka-s3-cluster1-control-plane
+
+  # Check etcd health and save to file
+  ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --endpoints=https://127.0.0.1:2379 endpoint health > /tmp/etcd-health.txt
+
+  # Exit the node
+  exit

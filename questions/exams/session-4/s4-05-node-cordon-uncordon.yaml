@@ -1,0 +1,48 @@
+id: "s4-05-node-cordon-uncordon"
+title: "Node Cordon/Uncordon Recovery"
+category: "Node Management"
+difficulty: "hard"
+weight: 10
+context: "kind-cka-s4-cluster2"
+task: |
+  All worker nodes in the cluster have been cordoned (marked as unschedulable).
+
+  Your task is to:
+  1. Identify which nodes are cordoned
+  2. Uncordon all worker nodes to make them schedulable again
+  3. Verify that new pods can be scheduled on these nodes
+
+  This tests your understanding of node lifecycle management and disruption scenarios.
+setup:
+  - "kubectl cordon cka-s4-cluster2-worker"
+  - "kubectl cordon cka-s4-cluster2-worker2"
+  - "sleep 2"
+validation:
+  - description: "All worker nodes are schedulable"
+    command: "kubectl get nodes --no-headers | grep -v control-plane | grep -c 'SchedulingDisabled' || true"
+    expect: "0"
+    match: "exact"
+  - description: "No nodes are cordoned"
+    command: "kubectl get nodes --no-headers | grep -c 'SchedulingDisabled' || true"
+    expect: "0"
+    match: "exact"
+hint: |
+  1. Check node status with `kubectl get nodes`
+  2. Look for "SchedulingDisabled" or check spec.unschedulable field
+  3. Use `kubectl uncordon <node-name>` for each cordoned node
+  4. Verify nodes are schedulable with `kubectl get nodes`
+solution: |
+  # Step 1: Check node status
+  kubectl get nodes
+  kubectl get nodes -o wide
+
+  # Step 2: Identify cordoned nodes
+  kubectl get nodes -o jsonpath='{.items[*].spec}'
+
+  # Step 3: Uncordon worker nodes
+  kubectl uncordon cka-s4-cluster2-worker
+  kubectl uncordon cka-s4-cluster2-worker2
+
+  # Step 4: Verify all nodes are schedulable
+  kubectl get nodes
+  # Should not show "SchedulingDisabled" status

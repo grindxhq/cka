@@ -1,0 +1,58 @@
+id: "s2-15-drain-cordon-node"
+title: "Drain and Cordon Node for Maintenance"
+category: "Troubleshooting"
+difficulty: "easy"
+weight: 5
+context: "kind-cka-s2-cluster1"
+task: |
+  A worker node needs maintenance and should be taken out of service.
+
+  Your task is to:
+  1. Create a Deployment with 3 replicas to ensure pods exist on the node
+  2. Drain a worker node to remove all pods and mark it as unschedulable
+  3. Verify pods have been rescheduled to other nodes
+  4. Uncordon the node to make it available again
+
+  Node draining is essential for safe node maintenance.
+setup:
+  - "kubectl create deployment maintenance-test --image=nginx:1.24 --replicas=3"
+validation:
+  - description: "Deployment maintenance-test exists"
+    command: "kubectl get deployment maintenance-test -o jsonpath='{.metadata.name}'"
+    expect: "maintenance-test"
+    match: "exact"
+  - description: "Deployment has 3 replicas"
+    command: "kubectl get deployment maintenance-test -o jsonpath='{.spec.replicas}'"
+    expect: "3"
+    match: "exact"
+  - description: "All nodes are uncordoned"
+    command: "kubectl get nodes -o jsonpath='{.items[?(@.spec.unschedulable==true)].metadata.name}' | wc -w"
+    expect: "0"
+    match: "exact"
+hint: |
+  - Use `kubectl drain <node-name>` to gracefully evict pods
+  - Add `--ignore-daemonsets` flag to ignore DaemonSet pods
+  - Use `kubectl uncordon <node-name>` to make node available again
+  - Draining automatically cordons the node
+  - Wait for Deployment to reschedule pods after draining
+solution: |
+  # Create a deployment if not already done
+  kubectl create deployment maintenance-test --image=nginx:1.24 --replicas=3 2>/dev/null || true
+
+  # Wait for deployment to be ready
+  kubectl rollout status deployment/maintenance-test --timeout=120s
+
+  # Get a worker node name
+  WORKER=$(kubectl get nodes --selector=node-role.kubernetes.io/worker -o name | head -1 | cut -d'/' -f2)
+
+  # Drain the node
+  kubectl drain $WORKER --ignore-daemonsets --delete-emptydir-data
+
+  # Verify pods are rescheduled
+  kubectl get pods -l app=maintenance-test
+
+  # Uncordon the node
+  kubectl uncordon $WORKER
+
+  # Verify all nodes are ready
+  kubectl get nodes
