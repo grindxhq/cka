@@ -59,15 +59,20 @@ jobs:
       - name: Sign and create DMG
         if: runner.os == 'macOS'
         run: |
+          # Find the actual .app name (Wails uses the name from wails.json which may have spaces)
+          APP_PATH=$(find build/bin -name "*.app" -maxdepth 1 | head -1)
+          APP_NAME=$(basename "$APP_PATH")
+          echo "Found app: $APP_PATH ($APP_NAME)"
+
           # Ad-hoc sign to reduce Gatekeeper severity
-          codesign --force --deep --sign - "build/bin/grindx-cka.app"
+          codesign --force --deep --sign - "$APP_PATH"
 
           # Strip quarantine attribute
-          xattr -cr "build/bin/grindx-cka.app"
+          xattr -cr "$APP_PATH"
 
           # Create a staging folder with just the .app
           mkdir -p dmg-staging
-          cp -R "build/bin/grindx-cka.app" dmg-staging/
+          cp -R "$APP_PATH" dmg-staging/
 
           brew install create-dmg
           create-dmg \
@@ -75,7 +80,7 @@ jobs:
             --window-pos 200 120 \
             --window-size 600 400 \
             --icon-size 100 \
-            --icon "grindx-cka.app" 175 200 \
+            --icon "$APP_NAME" 175 200 \
             --app-drop-link 425 200 \
             "grindx-cka-macos-universal.dmg" \
             "dmg-staging/" || true
