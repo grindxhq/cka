@@ -19,7 +19,7 @@ jobs:
           - os: windows-latest
             platform: windows/amd64
             artifact: "grindx-cka.exe"
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux/amd64
             artifact: "grindx-cka"
 
@@ -47,7 +47,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
 
       - name: Install frontend dependencies
         run: cd frontend && npm ci
