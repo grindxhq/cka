@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/grindxhq/cka/internal/cluster"
@@ -76,7 +77,12 @@ func (h *ExamHandler) Start(w http.ResponseWriter, r *http.Request) {
 }
 
 func runSetupCommand(command, kubeconfig string) {
-	cmd := exec.Command("sh", "-c", command)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", command)
+	} else {
+		cmd = exec.Command("sh", "-c", command)
+	}
 	cmd.Env = append(cmd.Environ(), "KUBECONFIG="+kubeconfig)
 	_ = cmd.Run()
 }
