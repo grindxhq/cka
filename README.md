@@ -90,13 +90,13 @@ wails dev
 ```
 ┌─────────────────────────────────────────────┐
 │  Desktop App (Wails v2)                     │
-│  ┌──────────────┐  ┌────────────────────┐  │
-│  │ React UI     │  │ Go Backend         │  │
-│  │ - Questions  │  │ - Exam Service     │  │
-│  │ - Terminal   │  │ - Cluster Manager  │  │
-│  │ - Timer      │  │ - Validator        │  │
-│  │ - Review     │  │ - History          │  │
-│  └──────────────┘  └────────────────────┘  │
+│  ┌──────────────┐  ┌────────────────────┐   │
+│  │ React UI     │  │ Go Backend         │   │
+│  │ - Questions  │  │ - Exam Service     │   │
+│  │ - Terminal   │  │ - Cluster Manager  │   │
+│  │ - Timer      │  │ - Validator        │   │
+│  │ - Review     │  │ - History          │   │
+│  └──────────────┘  └────────────────────┘   │
 └─────────────────────────────────────────────┘
          │                      │
          │ WebSocket            │ docker exec
