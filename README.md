@@ -172,6 +172,10 @@ make test-dry-run SESSION=session-1
 
 [Apache License 2.0](LICENSE)
 
+## Disclaimer
+
+This project is not affiliated with, endorsed by, or associated with The Linux Foundation or the Cloud Native Computing Foundation (CNCF). "Certified Kubernetes Administrator (CKA)" is a registered trademark of The Linux Foundation. This is an independent study tool for exam preparation.
+
 ---
 
 Built by [grindxhq](https://grindx.org)
