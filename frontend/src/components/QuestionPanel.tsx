@@ -18,9 +18,9 @@ function ContextSwitchBlock({ context, c, isDark }: { context: string; c: Return
     <div style={{
       marginBottom: '16px',
       padding: '10px 14px',
-      background: isDark ? '#1a1a2e' : '#f0f4ff',
-      border: `1px solid ${isDark ? '#2a2a4a' : '#c7d2fe'}`,
-      borderLeft: '3px solid #326ce5',
+      background: isDark ? '#1c1c21' : '#ecfeff',
+      border: `1px solid ${isDark ? '#2e2e35' : '#a5f3fc'}`,
+      borderLeft: '3px solid #06b6d4',
       borderRadius: '6px',
       display: 'flex',
       alignItems: 'center',
@@ -29,7 +29,7 @@ function ContextSwitchBlock({ context, c, isDark }: { context: string; c: Return
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
         <span style={{
-          fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b',
+          fontSize: '11px', color: isDark ? '#a1a1aa' : '#71717a',
           fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px',
           flexShrink: 0,
         }}>
@@ -37,7 +37,7 @@ function ContextSwitchBlock({ context, c, isDark }: { context: string; c: Return
         </span>
         <code style={{
           fontSize: '13px',
-          color: '#326ce5',
+          color: '#06b6d4',
           fontWeight: 600,
           fontFamily: "'SF Mono', Menlo, Consolas, monospace",
           overflow: 'hidden',
@@ -52,8 +52,8 @@ function ContextSwitchBlock({ context, c, isDark }: { context: string; c: Return
         title="Copy to clipboard"
         style={{
           padding: '3px 10px',
-          background: copied ? '#16a34a' : (isDark ? '#2a2a4a' : '#e0e7ff'),
-          color: copied ? 'white' : (isDark ? '#93c5fd' : '#4338ca'),
+          background: copied ? '#16a34a' : (isDark ? '#2e2e35' : '#cffafe'),
+          color: copied ? 'white' : (isDark ? '#67e8f9' : '#0e7490'),
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
@@ -197,12 +197,12 @@ export function QuestionPanel() {
             },
             pre: ({ children }) => (
               <pre style={{
-                background: '#1e293b',
+                background: '#1c1c21',
                 padding: '14px 16px',
                 borderRadius: '6px',
                 overflow: 'auto',
                 fontSize: '13px',
-                color: '#e2e8f0',
+                color: '#fafafa',
                 margin: '12px 0',
                 fontFamily: "'SF Mono', 'Fira Code', Menlo, Consolas, monospace",
               }}>
@@ -224,7 +224,7 @@ export function QuestionPanel() {
             disabled={loading}
             style={{
               padding: '8px 24px',
-              background: '#326ce5',
+              background: '#06b6d4',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -326,12 +326,12 @@ export function QuestionPanel() {
                 },
                 pre: ({ children }) => (
                   <pre style={{
-                    background: '#1e293b',
+                    background: '#1c1c21',
                     padding: '14px 16px',
                     borderRadius: '6px',
                     overflow: 'auto',
                     fontSize: '13px',
-                    color: '#e2e8f0',
+                    color: '#fafafa',
                     margin: '10px 0',
                     fontFamily: "'SF Mono', Menlo, Consolas, monospace",
                   }}>

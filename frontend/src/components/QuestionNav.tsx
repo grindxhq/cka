@@ -38,7 +38,7 @@ export function QuestionNav() {
               borderRadius: '50%',
               background: bg,
               color: 'white',
-              border: isCurrent ? '2px solid #326ce5' : '2px solid transparent',
+              border: isCurrent ? '2px solid #06b6d4' : '2px solid transparent',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,

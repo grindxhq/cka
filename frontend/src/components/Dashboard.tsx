@@ -71,7 +71,7 @@ export function Dashboard({ onBack }: DashboardProps) {
       {/* Top bar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 10,
-        background: isDark ? '#1a1a2e' : '#1e3a5f',
+        background: isDark ? '#1c1c21' : '#0891b2',
         padding: '12px 24px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
@@ -158,15 +158,15 @@ function AttemptRow({ attempt: a, onView, onDelete, isDark, c }: {
         display: 'flex', alignItems: 'center', gap: '16px',
         padding: '16px 20px',
         background: c.cardBg, borderRadius: '10px', cursor: 'pointer',
-        border: isDark ? `1px solid ${c.cardBorder}` : '1px solid #e5e7eb',
+        border: isDark ? `1px solid ${c.cardBorder}` : '1px solid #e4e4e7',
         transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = '#326ce5';
+        e.currentTarget.style.borderColor = '#06b6d4';
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(50,108,229,0.1)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = isDark ? c.cardBorder : '#e5e7eb';
+        e.currentTarget.style.borderColor = isDark ? c.cardBorder : '#e4e4e7';
         e.currentTarget.style.boxShadow = 'none';
       }}
     >
@@ -254,7 +254,7 @@ function AttemptReview({ attempt, onBack, isDark, c }: {
       {/* Top bar */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 10,
-        background: isDark ? '#1a1a2e' : '#1e3a5f',
+        background: isDark ? '#1c1c21' : '#0891b2',
         padding: '12px 24px',
         display: 'flex', alignItems: 'center', gap: '16px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
@@ -343,7 +343,7 @@ function AttemptReview({ attempt, onBack, isDark, c }: {
                       {cat.earned}/{cat.total} ({cat.score}%)
                     </span>
                   </div>
-                  <div style={{ height: '8px', borderRadius: '4px', background: isDark ? '#2a2a3e' : '#e5e7eb', overflow: 'hidden' }}>
+                  <div style={{ height: '8px', borderRadius: '4px', background: isDark ? '#2e2e35' : '#e4e4e7', overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', borderRadius: '4px', width: `${cat.score}%`,
                       background: cat.score >= 66 ? '#16a34a' : (cat.score >= 40 ? '#d97706' : '#dc2626'),
@@ -379,7 +379,7 @@ function AttemptReview({ attempt, onBack, isDark, c }: {
               return (
                 <div key={q.id} style={{
                   borderRadius: '8px',
-                  border: `1px solid ${isExpanded ? '#326ce5' : (isDark ? '#2a2a3e' : '#e5e7eb')}`,
+                  border: `1px solid ${isExpanded ? '#06b6d4' : (isDark ? '#2e2e35' : '#e4e4e7')}`,
                   overflow: 'hidden', marginBottom: '4px',
                 }}>
                   <div
@@ -425,7 +425,7 @@ function AttemptReview({ attempt, onBack, isDark, c }: {
                   </div>
 
                   {isExpanded && (
-                    <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${isDark ? '#2a2a3e' : '#e5e7eb'}` }}>
+                    <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${isDark ? '#2e2e35' : '#e4e4e7'}` }}>
                       <div style={{
                         margin: '12px 0', padding: '8px 12px', borderRadius: '6px',
                         fontSize: '13px', fontWeight: 600, color: statusColor,
@@ -442,15 +442,15 @@ function AttemptReview({ attempt, onBack, isDark, c }: {
                       </div>
                       {q.solution && (
                         <div style={{ marginBottom: '12px' }}>
-                          <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#326ce5', marginBottom: '8px' }}>Solution</div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#06b6d4', marginBottom: '8px' }}>Solution</div>
                           <pre style={{
                             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                             fontSize: '13px', lineHeight: '1.6',
-                            color: isDark ? '#a5d6ff' : '#1e40af',
-                            background: isDark ? '#0d1117' : '#f0f4ff',
+                            color: isDark ? '#a5d6ff' : '#0e7490',
+                            background: isDark ? '#0d1117' : '#ecfeff',
                             padding: '12px', borderRadius: '6px', margin: 0,
                             fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace",
-                            border: `1px solid ${isDark ? '#21262d' : '#dbeafe'}`,
+                            border: `1px solid ${isDark ? '#21262d' : '#a5f3fc'}`,
                           }}>
                             {q.solution}
                           </pre>

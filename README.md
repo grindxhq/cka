@@ -2,7 +2,7 @@
 
 The most realistic CKA (Certified Kubernetes Administrator) exam simulator. Practice on real Kubernetes clusters with an environment that mirrors the actual PSI Bridge exam interface.
 
-<video src="https://github.com/user-attachments/assets/7f240726-1b79-4f5d-820c-18b4836f6c32" width="100%" autoplay loop muted playsinline></video>
+![grindx cka demo](https://raw.githubusercontent.com/grindxhq/cka/main/demo.gif)
 
 ## Why this exists
 

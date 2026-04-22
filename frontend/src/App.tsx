@@ -39,7 +39,7 @@ export function App() {
           zIndex: 10000,
         }}>
           <div style={{
-            background: isDark ? '#1e293b' : '#ffffff',
+            background: isDark ? '#1c1c21' : '#ffffff',
             borderRadius: '12px',
             padding: '40px 48px',
             textAlign: 'center',
@@ -50,7 +50,7 @@ export function App() {
             <div style={{
               width: '48px',
               height: '48px',
-              border: '4px solid #326ce5',
+              border: '4px solid #06b6d4',
               borderTopColor: 'transparent',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
@@ -60,14 +60,14 @@ export function App() {
             <div style={{
               fontSize: '18px',
               fontWeight: 700,
-              color: isDark ? '#e2e8f0' : '#1e293b',
+              color: isDark ? '#fafafa' : '#1e293b',
               marginBottom: '8px',
             }}>
               Grading Your Exam
             </div>
             <div style={{
               fontSize: '14px',
-              color: isDark ? '#94a3b8' : '#64748b',
+              color: isDark ? '#a1a1aa' : '#71717a',
               lineHeight: 1.5,
             }}>
               {gradingMessage}
@@ -104,7 +104,7 @@ export function App() {
                 background: rightTab === 'terminal' ? c.tabActive : 'transparent',
                 color: rightTab === 'terminal' ? c.tabActiveText : c.tabText,
                 border: 'none',
-                borderBottom: rightTab === 'terminal' ? '2px solid #326ce5' : '2px solid transparent',
+                borderBottom: rightTab === 'terminal' ? '2px solid #06b6d4' : '2px solid transparent',
                 cursor: 'pointer',
                 fontSize: '13px',
                 fontWeight: 500,
@@ -119,7 +119,7 @@ export function App() {
                 background: rightTab === 'docs' ? c.tabActive : 'transparent',
                 color: rightTab === 'docs' ? c.tabActiveText : c.tabText,
                 border: 'none',
-                borderBottom: rightTab === 'docs' ? '2px solid #326ce5' : '2px solid transparent',
+                borderBottom: rightTab === 'docs' ? '2px solid #06b6d4' : '2px solid transparent',
                 cursor: 'pointer',
                 fontSize: '13px',
                 fontWeight: 500,
