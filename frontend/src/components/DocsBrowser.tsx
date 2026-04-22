@@ -105,8 +105,8 @@ export function DocsBrowser({ visible }: { visible?: boolean }) {
         display: 'flex',
         gap: '4px',
         padding: '6px 8px',
-        background: '#1e293b',
-        borderBottom: '1px solid #334155',
+        background: '#1c1c21',
+        borderBottom: '1px solid #3f3f48',
         alignItems: 'center',
       }}>
         <button onClick={() => sendToIframe('nav:back')} style={navBtnStyle} title="Back">&#8592;</button>
@@ -154,7 +154,7 @@ export function DocsBrowser({ visible }: { visible?: boolean }) {
           onClick={openCurrentInBrowser}
           style={{
             ...navBtnStyle,
-            background: '#326ce5',
+            background: '#06b6d4',
             fontSize: '11px',
             padding: '4px 10px',
             whiteSpace: 'nowrap',
@@ -167,7 +167,7 @@ export function DocsBrowser({ visible }: { visible?: boolean }) {
 
       {/* Content */}
       {!proxyReady && visible ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a1a1aa' }}>
           Starting docs proxy...
         </div>
       ) : (
@@ -185,8 +185,8 @@ export function DocsBrowser({ visible }: { visible?: boolean }) {
 
 const navBtnStyle: React.CSSProperties = {
   padding: '4px 8px',
-  background: '#334155',
-  color: '#e2e8f0',
+  background: '#3f3f48',
+  color: '#fafafa',
   border: 'none',
   borderRadius: '4px',
   cursor: 'pointer',
@@ -197,10 +197,10 @@ const navBtnStyle: React.CSSProperties = {
 const urlInputStyle: React.CSSProperties = {
   flex: 1,
   padding: '4px 8px',
-  background: '#0f172a',
-  border: '1px solid #334155',
+  background: '#111114',
+  border: '1px solid #3f3f48',
   borderRadius: '4px',
-  color: '#e2e8f0',
+  color: '#fafafa',
   fontSize: '12px',
   outline: 'none',
 };

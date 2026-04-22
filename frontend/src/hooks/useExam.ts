@@ -192,8 +192,8 @@ export const useExam = create<ExamStore>((set, get) => ({
         setupProgress: null,
         flaggedQuestions: new Set(),
       });
-      // Go fullscreen like the real CKA exam
-      try { await EnterFullscreen(); } catch { /* ignore if not supported */ }
+      // Fullscreen disabled for now (interferes with screen recording)
+      // try { await EnterFullscreen(); } catch { /* ignore if not supported */ }
       if (firstId) {
         get().selectQuestion(firstId);
       }

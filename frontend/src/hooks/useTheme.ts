@@ -9,8 +9,8 @@ interface ThemeStore {
 }
 
 export const useTheme = create<ThemeStore>((set, get) => ({
-  theme: 'light',
-  isDark: false,
+  theme: 'dark',
+  isDark: true,
   toggle: () => {
     const next = get().theme === 'light' ? 'dark' : 'light';
     set({ theme: next, isDark: next === 'dark' });
@@ -21,59 +21,59 @@ export const useTheme = create<ThemeStore>((set, get) => ({
 export function colors(isDark: boolean) {
   if (isDark) {
     return {
-      // Page / cards
-      pageBg: '#0f172a',
-      cardBg: '#1e293b',
-      cardBorder: '#334155',
+      // Page / cards — lifted from near-black to visible dark gray
+      pageBg: '#111114',
+      cardBg: '#1c1c21',
+      cardBorder: '#2e2e35',
 
       // Question panel
-      questionBg: '#1e293b',
-      questionText: '#cbd5e1',
-      questionHeading: '#f1f5f9',
-      questionMuted: '#94a3b8',
-      questionBorder: '#334155',
-      codeBg: '#0f172a',
-      codeText: '#38bdf8',
-      codeBorder: '#334155',
+      questionBg: '#1c1c21',
+      questionText: '#d4d4d8',
+      questionHeading: '#f4f4f5',
+      questionMuted: '#a1a1aa',
+      questionBorder: '#2e2e35',
+      codeBg: '#141417',
+      codeText: '#22d3ee',
+      codeBorder: '#2e2e35',
 
       // Header
-      headerBg: '#1e293b',
-      headerBorder: '#334155',
+      headerBg: '#1c1c21',
+      headerBorder: '#2e2e35',
 
       // Nav
-      navBg: '#0f172a',
-      navBorder: '#334155',
-      navPillDefault: '#475569',
+      navBg: '#141417',
+      navBorder: '#2e2e35',
+      navPillDefault: '#52525b',
 
       // Tabs
-      tabBarBg: '#1e293b',
-      tabBorder: '#334155',
-      tabActive: '#0f172a',
-      tabText: '#94a3b8',
-      tabActiveText: '#e2e8f0',
+      tabBarBg: '#1c1c21',
+      tabBorder: '#2e2e35',
+      tabActive: '#111114',
+      tabText: '#a1a1aa',
+      tabActiveText: '#f4f4f5',
 
       // Buttons
-      btnSecondaryBg: '#334155',
-      btnSecondaryText: '#e2e8f0',
-      btnSecondaryBorder: '#475569',
+      btnSecondaryBg: '#2e2e35',
+      btnSecondaryText: '#f4f4f5',
+      btnSecondaryBorder: '#3f3f46',
 
       // Context badge
-      contextBg: '#0f172a',
-      contextBorder: '#334155',
-      contextText: '#94a3b8',
+      contextBg: '#141417',
+      contextBorder: '#2e2e35',
+      contextText: '#a1a1aa',
 
       // Hint
       hintBg: '#422006',
-      hintBorder: '#f59e0b',
+      hintBorder: '#fbbf24',
       hintText: '#fbbf24',
 
       // Validation
-      validationBorder: '#334155',
+      validationBorder: '#2e2e35',
 
       // Input / misc
-      inputBg: '#0f172a',
-      inputBorder: '#334155',
-      inputText: '#e2e8f0',
+      inputBg: '#141417',
+      inputBorder: '#2e2e35',
+      inputText: '#f4f4f5',
 
       // Error
       errorBg: '#450a0a',
@@ -81,57 +81,57 @@ export function colors(isDark: boolean) {
       errorText: '#fca5a5',
 
       // Progress
-      progressBg: '#0c1a3d',
+      progressBg: '#0f1d30',
       progressBorder: '#1e3a5f',
-      progressText: '#93c5fd',
+      progressText: '#67e8f9',
 
       // Status
-      statusText: '#e2e8f0',
-      statusMuted: '#94a3b8',
+      statusText: '#f4f4f5',
+      statusMuted: '#a1a1aa',
     };
   }
 
   return {
     // Page / cards
-    pageBg: '#f1f5f9',
+    pageBg: '#f4f4f5',      // zinc-100
     cardBg: '#ffffff',
-    cardBorder: '#e2e8f0',
+    cardBorder: '#e4e4e7',   // zinc-200
 
     // Question panel
     questionBg: '#ffffff',
-    questionText: '#334155',
-    questionHeading: '#0f172a',
-    questionMuted: '#64748b',
-    questionBorder: '#f1f5f9',
-    codeBg: '#f1f5f9',
-    codeText: '#be185d',
-    codeBorder: '#e2e8f0',
+    questionText: '#3f3f46',  // zinc-700
+    questionHeading: '#18181b', // zinc-900
+    questionMuted: '#71717a',  // zinc-500
+    questionBorder: '#f4f4f5',
+    codeBg: '#f4f4f5',
+    codeText: '#0891b2',     // cyan-600
+    codeBorder: '#e4e4e7',
 
     // Header
-    headerBg: '#326ce5',
-    headerBorder: '#326ce5',
+    headerBg: '#0891b2',     // cyan-600
+    headerBorder: '#0891b2',
 
     // Nav
-    navBg: '#f1f5f9',
-    navBorder: '#e2e8f0',
-    navPillDefault: '#cbd5e1',
+    navBg: '#f4f4f5',
+    navBorder: '#e4e4e7',
+    navPillDefault: '#d4d4d8', // zinc-300
 
-    // Tabs
-    tabBarBg: '#2d2d2d',
-    tabBorder: '#404040',
-    tabActive: '#1e1e1e',
-    tabText: '#999999',
+    // Tabs (always dark — terminal area)
+    tabBarBg: '#18181b',
+    tabBorder: '#27272a',
+    tabActive: '#09090b',
+    tabText: '#a1a1aa',
     tabActiveText: '#ffffff',
 
     // Buttons
     btnSecondaryBg: '#ffffff',
-    btnSecondaryText: '#475569',
-    btnSecondaryBorder: '#cbd5e1',
+    btnSecondaryText: '#52525b', // zinc-600
+    btnSecondaryBorder: '#d4d4d8',
 
     // Context badge
-    contextBg: '#f8fafc',
-    contextBorder: '#e2e8f0',
-    contextText: '#475569',
+    contextBg: '#fafafa',
+    contextBorder: '#e4e4e7',
+    contextText: '#52525b',
 
     // Hint
     hintBg: '#fffbeb',
@@ -139,12 +139,12 @@ export function colors(isDark: boolean) {
     hintText: '#92400e',
 
     // Validation
-    validationBorder: '#f1f5f9',
+    validationBorder: '#f4f4f5',
 
     // Input / misc
-    inputBg: '#f8fafc',
-    inputBorder: '#e2e8f0',
-    inputText: '#334155',
+    inputBg: '#fafafa',       // zinc-50
+    inputBorder: '#e4e4e7',
+    inputText: '#3f3f46',
 
     // Error
     errorBg: '#fef2f2',
@@ -152,12 +152,12 @@ export function colors(isDark: boolean) {
     errorText: '#dc2626',
 
     // Progress
-    progressBg: '#eff6ff',
-    progressBorder: '#bfdbfe',
-    progressText: '#1d4ed8',
+    progressBg: '#ecfeff',    // cyan-50
+    progressBorder: '#a5f3fc', // cyan-200
+    progressText: '#0e7490',   // cyan-700
 
     // Status
-    statusText: '#334155',
-    statusMuted: '#94a3b8',
+    statusText: '#3f3f46',
+    statusMuted: '#a1a1aa',
   };
 }

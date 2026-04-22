@@ -28,8 +28,8 @@ export function Header({ onToggleDocs }: HeaderProps) {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 20px',
-      background: isDark ? '#1e293b' : '#326ce5',
-      borderBottom: isDark ? '1px solid #334155' : 'none',
+      background: isDark ? '#1c1c21' : '#06b6d4',
+      borderBottom: isDark ? '1px solid #2e2e35' : 'none',
       minHeight: '48px',
       color: 'white',
     }}>

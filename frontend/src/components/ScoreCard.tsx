@@ -24,7 +24,7 @@ export function ScoreCard() {
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        background: isDark ? '#1a1a2e' : '#1e3a5f',
+        background: isDark ? '#1c1c21' : '#0891b2',
         padding: '12px 24px',
         display: 'flex',
         alignItems: 'center',
@@ -38,7 +38,7 @@ export function ScoreCard() {
           onClick={reset}
           style={{
             padding: '8px 20px',
-            background: '#326ce5',
+            background: '#06b6d4',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
@@ -198,7 +198,7 @@ function CategoryBreakdown({ categories, isDark, c }: {
             {/* Progress bar */}
             <div style={{
               height: '8px', borderRadius: '4px',
-              background: isDark ? '#2a2a3e' : '#e5e7eb',
+              background: isDark ? '#2e2e35' : '#e4e4e7',
               overflow: 'hidden',
             }}>
               <div style={{
@@ -272,7 +272,7 @@ function QuestionRow({ question: q, index, isExpanded, onToggle, isDark, c }: {
   return (
     <div style={{
       borderRadius: '8px',
-      border: `1px solid ${isExpanded ? '#326ce5' : (isDark ? '#2a2a3e' : '#e5e7eb')}`,
+      border: `1px solid ${isExpanded ? '#06b6d4' : (isDark ? '#2e2e35' : '#e4e4e7')}`,
       overflow: 'hidden',
       marginBottom: '4px',
       transition: 'border-color 0.2s',
@@ -343,7 +343,7 @@ function QuestionRow({ question: q, index, isExpanded, onToggle, isDark, c }: {
       {isExpanded && (
         <div style={{
           padding: '0 16px 16px',
-          borderTop: `1px solid ${isDark ? '#2a2a3e' : '#e5e7eb'}`,
+          borderTop: `1px solid ${isDark ? '#2e2e35' : '#e4e4e7'}`,
         }}>
           {/* Status banner */}
           <div style={{
@@ -377,11 +377,11 @@ function QuestionRow({ question: q, index, isExpanded, onToggle, isDark, c }: {
               <pre style={{
                 whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                 fontSize: '13px', lineHeight: '1.6',
-                color: isDark ? '#a5d6ff' : '#1e40af',
-                background: isDark ? '#0d1117' : '#f0f4ff',
+                color: isDark ? '#a5d6ff' : '#0e7490',
+                background: isDark ? '#0d1117' : '#ecfeff',
                 padding: '12px', borderRadius: '6px', margin: 0,
                 fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace",
-                border: `1px solid ${isDark ? '#21262d' : '#dbeafe'}`,
+                border: `1px solid ${isDark ? '#21262d' : '#a5f3fc'}`,
               }}>
                 {q.solution}
               </pre>
@@ -436,7 +436,7 @@ function CollapsibleSection({ title, children, isDark, c, defaultOpen = true }: 
         onClick={() => setOpen(!open)}
         style={{
           fontSize: '12px', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.5px', color: '#326ce5', marginBottom: open ? '8px' : 0,
+          letterSpacing: '0.5px', color: '#06b6d4', marginBottom: open ? '8px' : 0,
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
           userSelect: 'none',
         }}
