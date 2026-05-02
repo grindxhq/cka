@@ -30,7 +30,7 @@ func (h *ValidateHandler) Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, allPassed := validator.Validate(q.Validation, h.cluster.Kubeconfig())
+	results, allPassed := validator.Validate(q.Validation, h.cluster.Kubeconfig(), q.Context)
 
 	// Update exam state
 	h.state.SetQuestionResult(id, allPassed)

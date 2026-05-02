@@ -1,0 +1,26 @@
+id: "kube-proxy"
+title: "kube-proxy"
+description: "The node-level component that programs kernel packet-forwarding rules so Service IPs actually route to pods. Covers iptables and IPVS modes, rule structure, and service-debug flow."
+component: "networking"
+domain: "services-networking"
+tags:
+  - "kube-proxy"
+  - "iptables"
+  - "ipvs"
+  - "networking"
+subtopics:
+  - id: "service-implementation"
+    title: "How Services Become Reachable"
+    summary: "What kube-proxy actually does: watch Services + EndpointSlices, program kernel rules, DNAT virtual IPs to pod IPs."
+    file: "service-implementation.md"
+    tags: ["overview", "dnat", "virtual-ip"]
+  - id: "iptables-ipvs"
+    title: "iptables vs IPVS vs nftables"
+    summary: "The three proxy modes: rule structure, scaling characteristics, scheduling algorithms, when to choose which."
+    file: "iptables-ipvs.md"
+    tags: ["iptables", "ipvs", "nftables", "scaling"]
+  - id: "service-debug-flow"
+    title: "Service Debug Flow"
+    summary: "Systematic debugging when a Service is unreachable: iptables-save, ipvsadm, conntrack, nsenter into pods."
+    file: "service-debug-flow.md"
+    tags: ["troubleshooting", "iptables-save", "ipvsadm", "conntrack"]

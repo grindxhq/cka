@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useExam } from '../hooks/useExam';
 import { useTheme, colors } from '../hooks/useTheme';
 
@@ -78,9 +79,16 @@ export function QuestionPanel() {
   const c = colors(isDark);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const isPractice = mode === 'practice';
   const isFlagged = currentQuestionId ? flaggedQuestions.has(currentQuestionId) : false;
+
+  useEffect(() => {
+    setShowHint(false);
+    setShowSolution(false);
+    setShowGuide(false);
+  }, [currentQuestionId]);
 
   if (!currentQuestion) {
     return (
@@ -176,6 +184,7 @@ export function QuestionPanel() {
           }
         `}</style>
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             code: ({ children, className }) => {
               if (!className) {
@@ -255,6 +264,24 @@ export function QuestionPanel() {
           </button>
         )}
 
+        {/* Study deck — rich markdown notes for practice mode */}
+        {isPractice && currentQuestion.guide && (
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            style={{
+              padding: '8px 20px',
+              background: showGuide ? '#0e7490' : c.btnSecondaryBg,
+              color: showGuide ? 'white' : c.btnSecondaryText,
+              border: showGuide ? '1px solid #0e7490' : `1px solid ${c.btnSecondaryBorder}`,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            {showGuide ? 'Hide Study Deck' : 'Open Study Deck'}
+          </button>
+        )}
+
         {/* Solution — only in Practice mode, after validation */}
         {isPractice && currentQuestion.solution && validationResult && (
           <button
@@ -286,7 +313,73 @@ export function QuestionPanel() {
           color: c.hintText,
           lineHeight: 1.6,
         }}>
-          <ReactMarkdown>{currentQuestion.hint}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{currentQuestion.hint}</ReactMarkdown>
+        </div>
+      )}
+
+      {/* Study deck panel — Practice mode only */}
+      {isPractice && showGuide && currentQuestion.guide && (
+        <div style={{
+          marginTop: '12px',
+          padding: '14px 16px',
+          background: isDark ? '#0b1d24' : '#ecfeff',
+          borderRadius: '6px',
+          borderLeft: '3px solid #06b6d4',
+          fontSize: '13px',
+          color: c.questionText,
+          lineHeight: 1.7,
+        }}>
+          <div style={{
+            fontWeight: 600,
+            marginBottom: '8px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: isDark ? '#67e8f9' : '#0e7490',
+          }}>
+            Scenario Deck
+          </div>
+          <div className="question-content">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code: ({ children, className }) => {
+                  if (!className) {
+                    return (
+                      <code style={{
+                        background: c.codeBg,
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        color: c.codeText,
+                        border: `1px solid ${c.codeBorder}`,
+                        fontFamily: "'SF Mono', Menlo, Consolas, monospace",
+                      }}>
+                        {children}
+                      </code>
+                    );
+                  }
+                  return <code className={className}>{children}</code>;
+                },
+                pre: ({ children }) => (
+                  <pre style={{
+                    background: '#1c1c21',
+                    padding: '14px 16px',
+                    borderRadius: '6px',
+                    overflow: 'auto',
+                    fontSize: '13px',
+                    color: '#fafafa',
+                    margin: '10px 0',
+                    fontFamily: "'SF Mono', Menlo, Consolas, monospace",
+                  }}>
+                    {children}
+                  </pre>
+                ),
+              }}
+            >
+              {currentQuestion.guide}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
 
@@ -307,6 +400,7 @@ export function QuestionPanel() {
           </div>
           <div className="question-content">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 code: ({ children, className }) => {
                   if (!className) {

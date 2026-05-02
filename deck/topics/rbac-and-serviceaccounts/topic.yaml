@@ -1,0 +1,31 @@
+id: "rbac-and-serviceaccounts"
+title: "RBAC And ServiceAccounts"
+description: "The authorization system: Roles and ClusterRoles, Bindings, ServiceAccounts as workload identity, kubectl auth can-i, and the namespace-vs-cluster scope model."
+component: "cluster-ops"
+domain: "cluster-architecture"
+tags:
+  - "rbac"
+  - "serviceaccount"
+  - "authorization"
+  - "auth"
+subtopics:
+  - id: "rbac-model"
+    title: "Role / ClusterRole / Binding Model"
+    summary: "The four kinds and how they compose. Verbs, resources, subresources, apiGroups, resourceNames. Aggregated ClusterRoles."
+    file: "rbac-model.md"
+    tags: ["role", "clusterrole", "binding"]
+  - id: "serviceaccounts"
+    title: "ServiceAccounts"
+    summary: "Workload identity: SA → JWT → apiserver. Default SA, projected tokens (TokenRequest), legacy long-lived secrets, image-pull secrets."
+    file: "serviceaccounts.md"
+    tags: ["serviceaccount", "token", "projected", "tokenrequest"]
+  - id: "auth-can-i"
+    title: "auth can-i And Access Verification"
+    summary: "Verifying RBAC outcomes: kubectl auth can-i, --as / --as-group impersonation, SubjectAccessReview, debugging 'Forbidden'."
+    file: "auth-can-i.md"
+    tags: ["can-i", "impersonate", "subjectaccessreview"]
+  - id: "namespace-vs-cluster-scope"
+    title: "Namespace Scope vs Cluster Scope"
+    summary: "Namespaced vs cluster-scoped resources, how RoleBinding to ClusterRole works, scope mismatches and gotchas."
+    file: "namespace-vs-cluster-scope.md"
+    tags: ["scope", "namespace", "cluster-scope"]

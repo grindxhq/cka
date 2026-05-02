@@ -15,12 +15,12 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-//go:embed all:questions
-var questionsFS embed.FS
+//go:embed all:questions all:deck
+var contentFS embed.FS
 
 func main() {
-	// Load exams and questions from embedded filesystem
-	store, err := question.NewStoreFromFS(questionsFS, "questions")
+	// Load exams, question notes, and standalone revision decks from embedded filesystem.
+	store, err := question.NewStoreFromFS(contentFS, "questions", "deck/topics")
 	if err != nil {
 		log.Fatalf("Failed to load questions: %v", err)
 	}

@@ -38,7 +38,7 @@ func (s *ValidatorService) ValidateQuestion(id string) (*ValidationResponse, err
 		return nil, errNotFound("question not found: " + id)
 	}
 
-	results, allPassed := validator.Validate(q.Validation, s.cluster.Kubeconfig())
+	results, allPassed := validator.Validate(q.Validation, s.cluster.Kubeconfig(), q.Context)
 
 	// Update exam state
 	s.state.SetQuestionResult(id, allPassed)

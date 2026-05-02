@@ -1,0 +1,31 @@
+id: "container-runtime"
+title: "Container Runtime And crictl"
+description: "How kubelet talks to containerd / cri-o via CRI, and crictl for direct runtime debugging when kubectl is unavailable or the apiserver is down."
+component: "node"
+domain: "cluster-architecture"
+tags:
+  - "cri"
+  - "containerd"
+  - "crictl"
+  - "runtime"
+subtopics:
+  - id: "cri-mental-model"
+    title: "CRI Mental Model"
+    summary: "What the Container Runtime Interface is, the two services (RuntimeService + ImageService), pod sandbox concept, runtime engine choices."
+    file: "cri-mental-model.md"
+    tags: ["cri", "sandbox", "containerd"]
+  - id: "crictl-basics"
+    title: "crictl Basics"
+    summary: "Common crictl commands: ps, pods, logs, exec, inspect, images, rmi --prune. The runtime endpoint config."
+    file: "crictl-basics.md"
+    tags: ["crictl", "commands", "debugging"]
+  - id: "control-plane-debug"
+    title: "Debugging Control Plane Containers"
+    summary: "When apiserver is down, crictl is your only window: inspect static pod containers, read their logs, restart them via manifest manipulation."
+    file: "control-plane-debug.md"
+    tags: ["control-plane", "static-pod", "recovery"]
+  - id: "image-and-sandbox-failures"
+    title: "Image And Sandbox Failures"
+    summary: "ImagePullBackOff at the runtime level, sandbox creation failures, runtime CrashLoop detection."
+    file: "image-and-sandbox-failures.md"
+    tags: ["imagepull", "sandbox", "failures"]

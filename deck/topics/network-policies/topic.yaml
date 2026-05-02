@@ -1,0 +1,31 @@
+id: "network-policies"
+title: "Network Policies"
+description: "Declarative L3/L4 firewall rules that the CNI enforces. Covers the selection and isolation model, default-deny patterns, AND-vs-OR selector traps, and the debug flow."
+component: "networking"
+domain: "services-networking"
+tags:
+  - "networkpolicy"
+  - "security"
+  - "firewall"
+  - "networking"
+subtopics:
+  - id: "mental-model"
+    title: "Policy Mental Model"
+    summary: "What NetworkPolicy does (and doesn't) do: declarative, additive, enforced by the CNI, applies only once a pod is selected."
+    file: "mental-model.md"
+    tags: ["overview", "cni", "enforcement"]
+  - id: "default-deny"
+    title: "Default Deny Patterns"
+    summary: "Zero-trust bootstrap: deny-all ingress, deny-all egress, and the DNS gotcha that breaks everything if you forget it."
+    file: "default-deny.md"
+    tags: ["default-deny", "zero-trust", "dns"]
+  - id: "selectors"
+    title: "Selectors: AND vs OR"
+    summary: "podSelector vs namespaceSelector, same-entry AND vs separate-entry OR, ipBlock with except, the trap in multi-selector rules."
+    file: "selectors.md"
+    tags: ["selectors", "namespaceselector", "podselector", "ipblock"]
+  - id: "debug-flow"
+    title: "NetworkPolicy Debug Flow"
+    summary: "Systematic triage: is CNI enforcing? which policies select this pod? are both directions allowed? DNS working?"
+    file: "debug-flow.md"
+    tags: ["troubleshooting", "cni", "debug"]

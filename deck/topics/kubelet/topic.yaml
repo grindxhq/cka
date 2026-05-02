@@ -1,0 +1,51 @@
+id: "kubelet"
+title: "kubelet"
+description: "Revision deck for the kubelet: the node-level agent that turns Pod specs into running containers, reports node health, and runs static pods."
+component: "node"
+domain: "cluster-architecture"
+tags:
+  - "kubelet"
+  - "node"
+  - "not-ready"
+  - "probes"
+subtopics:
+  - id: "overview"
+    title: "Node Agent Mental Model"
+    summary: "What kubelet does, what it reads, what it writes, and its relationship to apiserver and the container runtime."
+    file: "overview.md"
+    tags: ["overview", "node-agent"]
+  - id: "static-pod-watch"
+    title: "Static Pod Watch And Reconciliation"
+    summary: "How kubelet watches the manifest directory, schedules static pods, and publishes mirror pods."
+    file: "static-pod-watch.md"
+    tags: ["static-pods", "mirror", "reconciliation"]
+  - id: "node-notready"
+    title: "Node NotReady Triage"
+    summary: "A decision tree for a NotReady node: kubelet, runtime, CNI, disk, cert, time skew."
+    file: "node-notready.md"
+    tags: ["not-ready", "troubleshooting"]
+  - id: "probes-and-restarts"
+    title: "Probes, Restarts, Pod State"
+    summary: "Liveness, readiness, startup probes and how kubelet handles restartPolicy and CrashLoopBackOff timing."
+    file: "probes-and-restarts.md"
+    tags: ["probes", "restart", "crashloop"]
+  - id: "logs-and-config"
+    title: "Logs, Config, Flags"
+    summary: "Where kubelet lives, how to read its journal, and how to change config via /var/lib/kubelet/config.yaml."
+    file: "logs-and-config.md"
+    tags: ["logs", "config", "journalctl"]
+  - id: "cri-cni-csi-interfaces"
+    title: "CRI, CNI, CSI Interfaces"
+    summary: "The three pluggable interfaces kubelet depends on: container runtime (gRPC), networking (plugin binaries), storage (gRPC). crictl debugging."
+    file: "cri-cni-csi-interfaces.md"
+    tags: ["cri", "cni", "csi", "crictl", "containerd"]
+  - id: "cgroups-and-qos"
+    title: "Cgroups And QoS"
+    summary: "cgroup v1 vs v2, systemd vs cgroupfs driver, how limits/requests become cgroup files, QoS class placement, OOM ranking."
+    file: "cgroups-and-qos.md"
+    tags: ["cgroups", "qos", "oomkill", "limits", "systemd"]
+  - id: "pod-startup-and-eviction"
+    title: "Pod Startup And Eviction"
+    summary: "Pod admission, startup sequence, image GC, PLEG, node-pressure eviction signals and thresholds, pressure conditions."
+    file: "pod-startup-and-eviction.md"
+    tags: ["eviction", "pleg", "image-gc", "pod-lifecycle"]

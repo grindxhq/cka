@@ -1,0 +1,36 @@
+id: "kubeadm"
+title: "kubeadm"
+description: "The canonical cluster bootstrapper. Covers init/join/reset flows, generated PKI and kubeconfigs, bootstrap tokens, upgrades, and control plane customization."
+component: "cluster-ops"
+domain: "cluster-architecture"
+tags:
+  - "kubeadm"
+  - "bootstrap"
+  - "upgrade"
+  - "lifecycle"
+subtopics:
+  - id: "init-join-reset"
+    title: "Init, Join, Reset"
+    summary: "The three verbs: what each does, what files each touches, and the clean-room path between them."
+    file: "init-join-reset.md"
+    tags: ["init", "join", "reset", "lifecycle"]
+  - id: "generated-assets"
+    title: "Generated Assets And File Layout"
+    summary: "Every file kubeadm writes — PKI, kubeconfigs, static pod manifests, kubelet config — and where it lives."
+    file: "generated-assets.md"
+    tags: ["pki", "manifests", "kubelet-config"]
+  - id: "bootstrap-and-tokens"
+    title: "Bootstrap Tokens And Discovery"
+    summary: "How new nodes authenticate during join, TLS discovery flow, CSR approval, and the security implications."
+    file: "bootstrap-and-tokens.md"
+    tags: ["bootstrap-token", "discovery", "csr"]
+  - id: "upgrade-lifecycle"
+    title: "Upgrade And Lifecycle"
+    summary: "upgrade plan/apply/node, the component order, skew policy, rolling HA control plane upgrades, common stalls."
+    file: "upgrade-lifecycle.md"
+    tags: ["upgrade", "kubeadm-upgrade", "skew"]
+  - id: "control-plane-customization"
+    title: "Control Plane Customization"
+    summary: "Extending apiserver/scheduler/controller-manager flags via kubeadm ClusterConfiguration, kubelet config overrides."
+    file: "control-plane-customization.md"
+    tags: ["customization", "extraArgs", "clusterconfiguration"]

@@ -1,0 +1,31 @@
+id: "deployments-and-rollouts"
+title: "Deployments And Rollouts"
+description: "The Deployment → ReplicaSet → Pod chain, rolling updates, rollback history, and selector-related failures."
+component: "workload"
+domain: "workloads"
+tags:
+  - "deployment"
+  - "replicaset"
+  - "rollout"
+  - "rollback"
+subtopics:
+  - id: "deployment-replicaset-link"
+    title: "Deployment And ReplicaSet Link"
+    summary: "How a Deployment owns ReplicaSets owns Pods, the controller chain, ownership and adoption, history retention."
+    file: "deployment-replicaset-link.md"
+    tags: ["deployment", "replicaset", "ownerreferences"]
+  - id: "rollout-strategy"
+    title: "Rolling Updates And Strategy"
+    summary: "RollingUpdate vs Recreate, maxSurge/maxUnavailable arithmetic, progressDeadlineSeconds, paused rollouts."
+    file: "rollout-strategy.md"
+    tags: ["rolling-update", "maxSurge", "maxUnavailable"]
+  - id: "rollback"
+    title: "Rollback And History"
+    summary: "revisionHistoryLimit, rollout undo, change-cause annotation, when rollback is and isn't possible."
+    file: "rollback.md"
+    tags: ["rollback", "history", "revision"]
+  - id: "selector-mismatches"
+    title: "Selector And Template Mismatches"
+    summary: "Immutable selector, template label drift, the orphan-pods problem, why selector typos brick a Deployment."
+    file: "selector-mismatches.md"
+    tags: ["selector", "labels", "immutable"]

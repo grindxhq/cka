@@ -1,0 +1,57 @@
+id: "scheduler"
+title: "Scheduler"
+description: "Revision deck for kube-scheduler: how pods get assigned to nodes, why they stay Pending, and how affinity, taints, and topology spread change the outcome."
+component: "control-plane"
+domain: "workloads"
+tags:
+  - "scheduler"
+  - "scheduling"
+  - "pending"
+  - "affinity"
+  - "taints"
+subtopics:
+  - id: "overview"
+    title: "Scheduling Mental Model"
+    summary: "The two-phase filter/score pipeline, the scheduling queue, and what the scheduler never does."
+    file: "overview.md"
+    tags: ["overview", "filter", "score"]
+  - id: "pending-pod-triage"
+    title: "Pending Pod Triage"
+    summary: "A decision tree for why a pod is Pending, with the exact commands to tell apart the causes."
+    file: "pending-pod-triage.md"
+    tags: ["troubleshooting", "pending", "events"]
+  - id: "requests-and-capacity"
+    title: "Requests, Capacity, Fit"
+    summary: "How requests drive scheduling, why the scheduler ignores usage, and what allocatable means."
+    file: "requests-and-capacity.md"
+    tags: ["requests", "capacity", "allocatable"]
+  - id: "affinity-and-anti-affinity"
+    title: "Affinity And Anti-Affinity"
+    summary: "Node affinity, pod affinity/anti-affinity: required vs preferred, operators, topology keys, and the traps."
+    file: "affinity-and-anti-affinity.md"
+    tags: ["affinity", "selectors", "topology"]
+  - id: "taints-tolerations-priority"
+    title: "Taints, Tolerations, Priority"
+    summary: "Taint effects, tolerations, PriorityClass, and the preemption story."
+    file: "taints-tolerations-priority.md"
+    tags: ["taints", "tolerations", "priority", "preemption"]
+  - id: "topology-spread"
+    title: "Topology Spread Constraints"
+    summary: "topologyKey, maxSkew, whenUnsatisfiable, and how spread interacts with affinity."
+    file: "topology-spread.md"
+    tags: ["topology", "spread", "ha"]
+  - id: "scheduling-framework"
+    title: "Scheduling Framework"
+    summary: "The plugin pipeline: extension points, default plugins, KubeSchedulerConfiguration, multiple profiles, custom schedulers."
+    file: "scheduling-framework.md"
+    tags: ["framework", "plugins", "configuration", "custom-scheduler"]
+  - id: "preemption-internals"
+    title: "Preemption Internals"
+    summary: "PriorityClass, victim selection algorithm, nominatedNodeName, PDB interactions, failure modes."
+    file: "preemption-internals.md"
+    tags: ["priority", "preemption", "pdb", "nominated-node"]
+  - id: "scheduling-queue"
+    title: "Scheduling Queue"
+    summary: "The three queues (active/backoff/unschedulable), cluster events that re-queue, backoff math, scheduling gates."
+    file: "scheduling-queue.md"
+    tags: ["queue", "backoff", "events", "scheduling-gates"]

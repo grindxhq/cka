@@ -26,6 +26,35 @@ export interface QuestionSummary {
   weight: number;
 }
 
+export interface DeckTopicSummary {
+  id: string;
+  title: string;
+  description: string;
+  component?: string;
+  domain?: string;
+  tags?: string[];
+  subtopicCount: number;
+}
+
+export interface DeckSubtopic {
+  id: string;
+  title: string;
+  summary?: string;
+  content: string;
+  tags?: string[];
+}
+
+export interface DeckTopic {
+  id: string;
+  title: string;
+  description: string;
+  component?: string;
+  domain?: string;
+  tags?: string[];
+  subtopics: DeckSubtopic[];
+  subtopicCount: number;
+}
+
 export interface QuestionDetail {
   id: string;
   title: string;
@@ -34,6 +63,7 @@ export interface QuestionDetail {
   weight: number;
   context: string;
   task: string;
+  guide?: string;
   hint?: string;
   solution?: string;
 }
@@ -71,6 +101,7 @@ export interface QuestionResultDetail {
   weight: number;
   context: string;
   task: string;
+  guide?: string;
   hint?: string;
   solution?: string;
   attempted: boolean;

@@ -1,0 +1,31 @@
+id: "kubectl-and-kubeconfig"
+title: "kubectl And kubeconfig"
+description: "The CLI that wraps the apiserver. Covers contexts, JSONPath / custom columns, apply vs edit vs patch, and fast inspection patterns for the exam."
+component: "cluster-ops"
+domain: "cluster-architecture"
+tags:
+  - "kubectl"
+  - "kubeconfig"
+  - "jsonpath"
+  - "patch"
+subtopics:
+  - id: "contexts"
+    title: "Contexts, Clusters, Users"
+    summary: "kubeconfig structure, switching contexts, building one from scratch, shell helpers (KUBECONFIG merging, kubectx/kubens)."
+    file: "contexts.md"
+    tags: ["context", "kubeconfig", "switching"]
+  - id: "jsonpath-and-custom-columns"
+    title: "JSONPath And Custom Columns"
+    summary: "Output formats: -o jsonpath, -o jsonpath-as-json, -o custom-columns, -o yaml/json. Filtering and shaping output for scripts."
+    file: "jsonpath-and-custom-columns.md"
+    tags: ["jsonpath", "custom-columns", "output"]
+  - id: "apply-edit-patch"
+    title: "apply vs edit vs patch"
+    summary: "When to use each: declarative apply with managed-fields, imperative patch (strategic/merge/JSON), edit for quick iteration, replace for force."
+    file: "apply-edit-patch.md"
+    tags: ["apply", "patch", "edit", "replace"]
+  - id: "fast-inspection"
+    title: "Fast Inspection Patterns"
+    summary: "Speed exam-relevant patterns: -A, -o wide, --field-selector, --show-labels, dry-run, get -w, kubectl explain."
+    file: "fast-inspection.md"
+    tags: ["inspection", "speed", "exam"]

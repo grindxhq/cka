@@ -130,14 +130,49 @@ wails dev
 │   ├── src/components/    # UI components
 │   ├── src/hooks/         # Zustand store + theme
 │   └── src/api/           # Wails bindings
+├── deck/                  # Standalone revision deck content + backlog
+│   └── topics/            # Component/topic decks
 ├── cmd/test-runner/       # Automated e2e test runner
-└── questions/exams/       # Question bank (YAML)
+└── questions/exams/       # Question bank (YAML + optional .md scenario notes)
     ├── session-1/         # Fundamentals (18 tasks)
     ├── session-2/         # Intermediate (17 tasks)
     ├── session-3/         # Advanced (16 tasks)
     ├── session-4/         # Expert (19 tasks)
     └── session-5/         # Cluster Architecture (16 tasks)
 ```
+
+### Scenario Deck Notes
+
+Each question can have an optional markdown sidecar file with the same basename as the YAML.
+
+Example:
+
+```text
+questions/exams/session-2/
+├── s2-12-troubleshoot-crashloopbackoff.yaml
+└── s2-12-troubleshoot-crashloopbackoff.md
+```
+
+If the `.md` file exists, the app exposes it as a rich "Study Deck" panel in Practice mode. This is the easiest way to build a running scenario deck one question at a time as you study and debug.
+
+### Revision Decks
+
+Standalone revision decks live under `deck/` and are not tied to running Docker or clusters.
+
+Example:
+
+```text
+deck/
+├── backlog.yaml
+└── topics/
+    └── api-server/
+        ├── topic.yaml
+        ├── overview.md
+        ├── crash-triage.md
+        └── invalid-manifest-yaml.md
+```
+
+`topic.yaml` defines the deck metadata and subtopic ordering. Each subtopic points at a markdown file that the app renders inside the setup-screen Deck view.
 
 ## Contributing
 

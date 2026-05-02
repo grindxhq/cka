@@ -44,6 +44,7 @@ type Question struct {
 	Weight     int              `yaml:"weight" json:"weight"`
 	Context    string           `yaml:"context" json:"context"`
 	Task       string           `yaml:"task" json:"task"`
+	Guide      string           `yaml:"guide,omitempty" json:"guide,omitempty"`
 	Setup      []string         `yaml:"setup,omitempty" json:"-"`
 	Validation []ValidationRule `yaml:"validation" json:"-"`
 	Hint       string           `yaml:"hint,omitempty" json:"hint,omitempty"`

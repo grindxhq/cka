@@ -1,0 +1,26 @@
+id: "ingress-and-gateway"
+title: "Ingress And Gateway API"
+description: "L7 HTTP/HTTPS routing: the Ingress resource, IngressClass, the newer Gateway API (GatewayClass / Gateway / HTTPRoute), and debugging the path from external client to pod."
+component: "networking"
+domain: "services-networking"
+tags:
+  - "ingress"
+  - "gateway-api"
+  - "l7-routing"
+  - "networking"
+subtopics:
+  - id: "resource-model"
+    title: "Resource Model"
+    summary: "Ingress spec (rules/paths/TLS/default backend) and Gateway API (GatewayClass/Gateway/HTTPRoute). When to choose which."
+    file: "resource-model.md"
+    tags: ["ingress", "gateway", "resource-spec"]
+  - id: "controller-dependency"
+    title: "Controller Dependency"
+    summary: "Neither resource does anything without a controller. How nginx/Contour/Traefik actually route traffic, and how IngressClass / GatewayClass bind."
+    file: "controller-dependency.md"
+    tags: ["controller", "nginx", "ingressclass"]
+  - id: "route-debug"
+    title: "Route Debug Flow"
+    summary: "From external curl to pod response: DNS, LB, controller routing, backend Service, Endpoints. Finding which link is broken."
+    file: "route-debug.md"
+    tags: ["troubleshooting", "debug", "l7"]

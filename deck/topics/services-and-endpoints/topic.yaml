@@ -1,0 +1,36 @@
+id: "services-and-endpoints"
+title: "Services And Endpoints"
+description: "The stable virtual IPs in front of ephemeral Pods. Covers the cluster network model, service types, EndpointSlices, port mapping, and triaging empty Endpoints."
+component: "networking"
+domain: "services-networking"
+tags:
+  - "services"
+  - "endpoints"
+  - "endpointslice"
+  - "networking"
+subtopics:
+  - id: "overview"
+    title: "Cluster Network Model"
+    summary: "Pod-to-pod, pod-to-service, and external communication: the four requirements of Kubernetes networking, and where Services fit."
+    file: "overview.md"
+    tags: ["overview", "pod-network", "cni"]
+  - id: "service-types"
+    title: "Service Types"
+    summary: "ClusterIP, NodePort, LoadBalancer, ExternalName, and headless — what each really does, when to use it, and what breaks it."
+    file: "service-types.md"
+    tags: ["clusterip", "nodeport", "loadbalancer", "headless"]
+  - id: "selectors-and-endpoints"
+    title: "Selectors And EndpointSlices"
+    summary: "How selectors produce EndpointSlices, the Ready/Serving/Terminating distinction, readiness gating, dual-stack slices."
+    file: "selectors-and-endpoints.md"
+    tags: ["selectors", "endpointslice", "readiness"]
+  - id: "port-mapping"
+    title: "port / targetPort / containerPort / nodePort"
+    summary: "The four port fields, named ports, multi-port services, and the port that trips people up."
+    file: "port-mapping.md"
+    tags: ["ports", "targetport", "containerport"]
+  - id: "no-endpoints-triage"
+    title: "No Endpoints Triage"
+    summary: "Service exists, Endpoints empty. The decision tree from selector mismatch to readiness probe failure."
+    file: "no-endpoints-triage.md"
+    tags: ["troubleshooting", "endpoints", "debug"]

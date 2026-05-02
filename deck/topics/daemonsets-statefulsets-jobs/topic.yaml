@@ -1,0 +1,26 @@
+id: "daemonsets-statefulsets-jobs"
+title: "DaemonSets, StatefulSets, Jobs"
+description: "The three non-Deployment workload controllers: per-node pods (DaemonSet), stable identity (StatefulSet), run-to-completion (Job/CronJob)."
+component: "workload"
+domain: "workloads"
+tags:
+  - "daemonset"
+  - "statefulset"
+  - "job"
+  - "cronjob"
+subtopics:
+  - id: "daemonsets"
+    title: "DaemonSets"
+    summary: "One pod per node (or per matching node), update strategies (RollingUpdate / OnDelete), node-lifecycle integration, common patterns."
+    file: "daemonsets.md"
+    tags: ["daemonset", "node-agent", "logging", "monitoring"]
+  - id: "statefulsets"
+    title: "StatefulSets"
+    summary: "Stable network identity, ordered deploy/delete, per-replica PVCs, headless service requirement, partitioned updates."
+    file: "statefulsets.md"
+    tags: ["statefulset", "ordered", "headless", "pvc"]
+  - id: "jobs-and-cronjobs"
+    title: "Jobs And CronJobs"
+    summary: "Run-to-completion semantics, parallelism / completions, backoff, ttlSecondsAfterFinished. CronJob schedule and concurrency policy."
+    file: "jobs-and-cronjobs.md"
+    tags: ["job", "cronjob", "batch", "schedule"]

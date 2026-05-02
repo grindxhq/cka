@@ -1,0 +1,56 @@
+id: "controller-manager"
+title: "Controller Manager"
+description: "Revision deck for kube-controller-manager: the reconciliation loops that turn declared state into live state. Explains why Deployments heal, how Endpoints stay in sync, and where common drift comes from."
+component: "control-plane"
+domain: "cluster-architecture"
+tags:
+  - "controller-manager"
+  - "reconciliation"
+  - "controllers"
+  - "endpoints"
+subtopics:
+  - id: "overview"
+    title: "Control Loop Mental Model"
+    summary: "What a controller is, the reconcile cycle, leader election, and how kube-controller-manager bundles them."
+    file: "overview.md"
+    tags: ["overview", "reconciliation"]
+  - id: "node-controller"
+    title: "Node Controller"
+    summary: "How NotReady nodes get tainted, pod eviction timing, and what the node controller actually owns."
+    file: "node-controller.md"
+    tags: ["node", "not-ready", "eviction"]
+  - id: "workload-controllers"
+    title: "Deployment, ReplicaSet, Job Controllers"
+    summary: "The chain from Deployment to ReplicaSet to Pod, rollout logic, and how Jobs / CronJobs differ."
+    file: "workload-controllers.md"
+    tags: ["deployment", "replicaset", "job", "cronjob"]
+  - id: "service-and-endpoints"
+    title: "Service, Endpoints, EndpointSlice Controllers"
+    summary: "How Service selectors become Endpoints, what makes a pod eligible, and why an Endpoint list can be empty."
+    file: "service-and-endpoints.md"
+    tags: ["service", "endpoints", "selectors"]
+  - id: "namespace-serviceaccount-token"
+    title: "Namespace, ServiceAccount, Token Controllers"
+    summary: "Namespace finalizers, default ServiceAccount creation, token and projected token handling."
+    file: "namespace-serviceaccount-token.md"
+    tags: ["namespace", "serviceaccount", "tokens"]
+  - id: "pv-and-storage-controllers"
+    title: "PV And Storage Controllers"
+    summary: "PV binder, attach/detach, dynamic provisioning flow, and reclaim policy behavior."
+    file: "pv-and-storage-controllers.md"
+    tags: ["pv", "pvc", "storage", "attach-detach"]
+  - id: "informers-and-caches"
+    title: "Informers And Caches"
+    summary: "The universal controller pattern: Reflector, DeltaFIFO, Indexer, SharedInformer, Lister, work queue. Why cluster scales."
+    file: "informers-and-caches.md"
+    tags: ["informer", "cache", "workqueue", "reconcile"]
+  - id: "garbage-collection"
+    title: "Garbage Collection"
+    summary: "ownerReferences, cascade propagation (background/foreground/orphan), finalizers, stuck Terminating recovery."
+    file: "garbage-collection.md"
+    tags: ["gc", "owner-references", "finalizers", "cascade"]
+  - id: "leader-election"
+    title: "Leader Election"
+    summary: "Lease-based HA coordination: timing parameters, best-effort semantics, clock skew hazards, diagnosing transitions."
+    file: "leader-election.md"
+    tags: ["leader-election", "lease", "ha", "clock-skew"]

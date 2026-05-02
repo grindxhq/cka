@@ -14,7 +14,23 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // Validate runs all validation rules for a question and returns results.
-func Validate(rules []question.ValidationRule, kubeconfig string) ([]question.ValidationResult, bool) {
+// If kubeContext is non-empty, the kubectl context is switched first so that
+// validations run against the cluster the question targets. A failed switch
+// short-circuits with a single failed result — silently grading against the
+// wrong cluster is worse than failing loudly.
+func Validate(rules []question.ValidationRule, kubeconfig string, kubeContext ...string) ([]question.ValidationResult, bool) {
+	if len(kubeContext) > 0 && kubeContext[0] != "" {
+		switchCmd := "kubectl config use-context " + kubeContext[0]
+		if out, err := runCommand(switchCmd, kubeconfig); err != nil {
+			return []question.ValidationResult{{
+				Description: "switch kubectl context to " + kubeContext[0],
+				Passed:      false,
+				Expected:    "context switched",
+				Actual:      "error: " + err.Error() + " — " + strings.TrimSpace(out),
+			}}, false
+		}
+	}
+
 	results := make([]question.ValidationResult, len(rules))
 	allPassed := true
 

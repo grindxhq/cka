@@ -1,0 +1,31 @@
+id: "coredns"
+title: "CoreDNS"
+description: "The cluster DNS server. Covers the pod DNS path, Service/Pod records, Corefile configuration with plugins, and systematic DNS debugging."
+component: "networking"
+domain: "services-networking"
+tags:
+  - "coredns"
+  - "dns"
+  - "service-discovery"
+  - "networking"
+subtopics:
+  - id: "dns-path"
+    title: "DNS Resolution Path"
+    summary: "From pod's /etc/resolv.conf to CoreDNS to answer: ndots, search suffixes, and how a short name becomes a ClusterIP."
+    file: "dns-path.md"
+    tags: ["resolv.conf", "ndots", "resolution"]
+  - id: "service-discovery"
+    title: "Service And Pod Records"
+    summary: "A/AAAA for Services and Pods, SRV for named ports, headless services returning pod IPs, StatefulSet per-pod FQDNs."
+    file: "service-discovery.md"
+    tags: ["a-record", "srv-record", "headless", "statefulset"]
+  - id: "configmap-and-reload"
+    title: "Corefile, Plugins, Reload"
+    summary: "The Corefile anatomy, the default plugin chain (kubernetes, cache, forward, reload, loop), and how hot-reload works."
+    file: "configmap-and-reload.md"
+    tags: ["corefile", "plugins", "reload", "configmap"]
+  - id: "dns-debug"
+    title: "DNS Debug Flow"
+    summary: "Systematic DNS triage: resolv.conf check, CoreDNS health, query tests with dig, NXDOMAIN vs SERVFAIL vs timeout."
+    file: "dns-debug.md"
+    tags: ["troubleshooting", "dig", "nxdomain", "timeout"]

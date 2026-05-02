@@ -1,0 +1,41 @@
+id: "symptom-playbooks"
+title: "Symptom Playbooks"
+description: "Cross-cutting troubleshooting decision trees for the most common cluster failures. Start with the symptom; walk to the root cause across components."
+component: "troubleshooting"
+domain: "troubleshooting"
+tags:
+  - "troubleshooting"
+  - "playbook"
+  - "exam"
+  - "diagnosis"
+subtopics:
+  - id: "api-unavailable"
+    title: "API Unavailable"
+    summary: "kubectl hangs / refuses / 5xx. Walk: client → LB → apiserver pod → static manifest → etcd → certs → kubelet."
+    file: "api-unavailable.md"
+    tags: ["apiserver", "control-plane", "outage"]
+  - id: "node-notready"
+    title: "Node NotReady"
+    summary: "Decision tree: is kubelet alive, runtime alive, CNI present, disk pressure, certs valid, NTP correct."
+    file: "node-notready.md"
+    tags: ["node", "kubelet", "cni"]
+  - id: "pod-pending"
+    title: "Pod Pending"
+    summary: "Why a pod won't schedule: scheduler events, taints, resources, affinity, scheduler health, scheduling gates."
+    file: "pod-pending.md"
+    tags: ["pod", "pending", "scheduler"]
+  - id: "service-not-routing"
+    title: "Service Not Routing"
+    summary: "Layer-by-layer: DNS, Endpoints, kube-proxy rules, NetworkPolicy, pod listening port, CNI."
+    file: "service-not-routing.md"
+    tags: ["service", "routing", "kube-proxy"]
+  - id: "dns-broken"
+    title: "DNS Broken"
+    summary: "From resolv.conf to CoreDNS to upstream: timeout vs NXDOMAIN vs SERVFAIL, intermittent failures, ndots traps."
+    file: "dns-broken.md"
+    tags: ["dns", "coredns", "resolv.conf"]
+  - id: "pvc-pending"
+    title: "PVC Pending"
+    summary: "Static vs dynamic, missing StorageClass, provisioner errors, WaitForFirstConsumer, selector mismatch."
+    file: "pvc-pending.md"
+    tags: ["pvc", "storage", "provisioning"]

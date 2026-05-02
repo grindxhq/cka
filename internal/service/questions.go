@@ -21,6 +21,11 @@ func (s *QuestionService) ListQuestions() []question.QuestionSummary {
 	return s.store.Summaries()
 }
 
+// ListDeckTopics returns all standalone revision deck topics.
+func (s *QuestionService) ListDeckTopics() []question.DeckTopicSummary {
+	return s.store.Decks()
+}
+
 // QuestionDetailResponse is the shape returned to the frontend (no validation rules).
 type QuestionDetailResponse struct {
 	ID         string `json:"id"`
@@ -30,6 +35,7 @@ type QuestionDetailResponse struct {
 	Weight     int    `json:"weight"`
 	Context    string `json:"context"`
 	Task       string `json:"task"`
+	Guide      string `json:"guide,omitempty"`
 	Hint       string `json:"hint,omitempty"`
 	Solution   string `json:"solution,omitempty"`
 }
@@ -48,7 +54,17 @@ func (s *QuestionService) GetQuestion(id string) (*QuestionDetailResponse, error
 		Weight:     q.Weight,
 		Context:    q.Context,
 		Task:       q.Task,
+		Guide:      q.Guide,
 		Hint:       q.Hint,
 		Solution:   q.Solution,
 	}, nil
+}
+
+// GetDeckTopic returns a standalone revision deck with subtopics and markdown content.
+func (s *QuestionService) GetDeckTopic(id string) (*question.DeckTopic, error) {
+	d, ok := s.store.GetDeck(id)
+	if !ok {
+		return nil, errNotFound("deck topic not found: " + id)
+	}
+	return d, nil
 }

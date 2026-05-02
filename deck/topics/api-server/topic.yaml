@@ -1,0 +1,40 @@
+id: "api-server"
+title: "API Server"
+description: "Revision deck for kube-apiserver failures, static pod triage, manifest mistakes, and first-response troubleshooting."
+component: "control-plane"
+domain: "cluster-architecture"
+tags:
+  - "apiserver"
+  - "static-pods"
+  - "troubleshooting"
+subtopics:
+  - id: "overview"
+    title: "Mental Model"
+    summary: "What kube-apiserver does, what breaks when it is down, and what signals point to it first."
+    file: "overview.md"
+    tags: ["overview", "control-plane"]
+  - id: "crash-triage"
+    title: "Crash Triage Flow"
+    summary: "The fastest order for checking manifests, container state, logs, and node symptoms."
+    file: "crash-triage.md"
+    tags: ["troubleshooting", "crictl", "logs"]
+  - id: "invalid-manifest-yaml"
+    title: "Invalid Manifest YAML"
+    summary: "How a broken static pod manifest takes down the API server and how to recover it."
+    file: "invalid-manifest-yaml.md"
+    tags: ["yaml", "static-pods", "recovery"]
+  - id: "authn-authz-admission"
+    title: "Authn, Authz, Admission"
+    summary: "The full request pipeline: authentication strategies, RBAC / Node authorizer, admission controllers, webhook gotchas."
+    file: "authn-authz-admission.md"
+    tags: ["authentication", "rbac", "admission", "webhook"]
+  - id: "certs-and-kubeconfigs"
+    title: "Certificates And Kubeconfigs"
+    summary: "The full PKI map: three CAs, per-component certs, the four kubeadm kubeconfigs, CSR signing, renewal, and recovery."
+    file: "certs-and-kubeconfigs.md"
+    tags: ["pki", "certificates", "kubeconfig", "csr", "renewal"]
+  - id: "ha-and-load-balancing"
+    title: "HA And Load Balancing"
+    summary: "Stacked vs external etcd, load balancer placement, --control-plane-endpoint, joining CP nodes, leader election, rolling upgrade order."
+    file: "ha-and-load-balancing.md"
+    tags: ["ha", "load-balancer", "kubeadm", "leader-election", "upgrade"]

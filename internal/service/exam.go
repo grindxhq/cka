@@ -230,7 +230,7 @@ func (s *ExamService) FinishExam() ExamResultResponse {
 			continue
 		}
 		s.emitProgress("grading", fmt.Sprintf("Grading question %d/%d: %s", i+1, len(questions), q.Title))
-		_, allPassed := validator.Validate(q.Validation, kubeconfig)
+		_, allPassed := validator.Validate(q.Validation, kubeconfig, q.Context)
 		s.state.SetQuestionResult(q.ID, allPassed)
 	}
 

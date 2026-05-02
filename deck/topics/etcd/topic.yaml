@@ -1,0 +1,52 @@
+id: "etcd"
+title: "etcd"
+description: "Revision deck for etcd: the cluster's state store. Covers mental model, health/quorum, TLS/endpoints, snapshot backup, and the restore dance."
+component: "control-plane"
+domain: "cluster-architecture"
+tags:
+  - "etcd"
+  - "backup"
+  - "restore"
+  - "quorum"
+  - "troubleshooting"
+subtopics:
+  - id: "overview"
+    title: "Mental Model"
+    summary: "What etcd stores, how kube-apiserver uses it, and what breaks when it is unhealthy."
+    file: "overview.md"
+    tags: ["overview", "raft", "consistency"]
+  - id: "health-and-members"
+    title: "Health, Members, Quorum"
+    summary: "Endpoint health, member list, leader checks, and what quorum loss actually looks like."
+    file: "health-and-members.md"
+    tags: ["health", "quorum", "etcdctl"]
+  - id: "snapshots-and-restore"
+    title: "Snapshots And Restore"
+    summary: "Take a snapshot, restore it to a new data dir, and swap the static pod data path. The most common etcd exam drill."
+    file: "snapshots-and-restore.md"
+    tags: ["backup", "restore", "snapshot", "exam"]
+  - id: "tls-and-endpoints"
+    title: "TLS, Endpoints, And Client Flags"
+    summary: "The four flags etcdctl always needs, where the certs live, and how to read connection errors."
+    file: "tls-and-endpoints.md"
+    tags: ["tls", "certificates", "etcdctl"]
+  - id: "restore-side-effects"
+    title: "Restore Side Effects"
+    summary: "What a restore actually does to the cluster, which objects can disappear, and the post-restore checklist."
+    file: "restore-side-effects.md"
+    tags: ["restore", "pitfalls", "recovery"]
+  - id: "ha-and-membership"
+    title: "HA And Membership"
+    summary: "Multi-member lifecycle: add/remove/promote, learners, quorum loss recovery, force-new-cluster, kubeadm CP join details."
+    file: "ha-and-membership.md"
+    tags: ["ha", "membership", "raft", "quorum", "force-new-cluster"]
+  - id: "compaction-and-defrag"
+    title: "Compaction, Defrag, And NOSPACE"
+    summary: "MVCC growth, history compaction vs disk defrag, quota, NOSPACE alarm recovery, interaction with kube-apiserver."
+    file: "compaction-and-defrag.md"
+    tags: ["compaction", "defrag", "mvcc", "quota", "nospace"]
+  - id: "data-model-and-watch"
+    title: "Data Model, Watch, Leases"
+    summary: "/registry keyspace, revisions, MVCC, watch semantics, etcd Lease vs Kubernetes Lease, informer pattern."
+    file: "data-model-and-watch.md"
+    tags: ["data-model", "mvcc", "watch", "lease", "informer"]

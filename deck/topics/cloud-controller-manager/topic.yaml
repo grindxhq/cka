@@ -1,0 +1,25 @@
+id: "cloud-controller-manager"
+title: "Cloud Controller Manager"
+description: "The optional control plane component that integrates Kubernetes with cloud-provider APIs: nodes, routes, LoadBalancer Services."
+component: "cluster-ops"
+domain: "cluster-architecture"
+tags:
+  - "cloud-provider"
+  - "ccm"
+  - "load-balancer"
+subtopics:
+  - id: "overview"
+    title: "What It Owns"
+    summary: "Why CCM exists (split out from kube-controller-manager), what it does, when you need it."
+    file: "overview.md"
+    tags: ["overview", "cloud-controller", "in-tree-removal"]
+  - id: "node-and-route-sync"
+    title: "Nodes, Addresses, Routes"
+    summary: "Node controller (cloud side): annotations, providerID, labels, decommission detection. Route controller for non-overlay CNIs."
+    file: "node-and-route-sync.md"
+    tags: ["nodes", "providerid", "routes"]
+  - id: "loadbalancer-services"
+    title: "LoadBalancer Service Implications"
+    summary: "What happens when type: LoadBalancer is created, the EXTERNAL-IP <pending> state, finalizers, cloud-specific annotations."
+    file: "loadbalancer-services.md"
+    tags: ["loadbalancer", "service", "external-ip"]

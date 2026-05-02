@@ -1,0 +1,42 @@
+id: "storage"
+title: "Storage"
+description: "PV/PVC binding, StorageClasses, access modes, reclaim policies, volume expansion, and the decision tree for stuck PVCs."
+component: "storage"
+domain: "storage"
+tags:
+  - "storage"
+  - "pv"
+  - "pvc"
+  - "storageclass"
+  - "csi"
+subtopics:
+  - id: "overview"
+    title: "Volume And Storage Model"
+    summary: "Ephemeral vs persistent volumes, the PV/PVC/SC/CSI architecture, and where each piece lives on the cluster."
+    file: "overview.md"
+    tags: ["overview", "volumes", "csi"]
+  - id: "pv-pvc-binding"
+    title: "PV/PVC Binding"
+    summary: "Static vs dynamic provisioning, how the binder matches, bidirectional claimRef/volumeName, the Pending→Bound→Released lifecycle."
+    file: "pv-pvc-binding.md"
+    tags: ["pv", "pvc", "binding", "provisioning"]
+  - id: "storageclasses"
+    title: "StorageClasses And Provisioning"
+    summary: "provisioner, parameters, volumeBindingMode (Immediate vs WaitForFirstConsumer), the default class, CSI driver mapping."
+    file: "storageclasses.md"
+    tags: ["storageclass", "csi", "provisioner", "topology"]
+  - id: "access-modes-reclaim"
+    title: "Access Modes And Reclaim Policies"
+    summary: "RWO/ROX/RWX/RWOP with real backend limitations; Retain/Delete/Recycle and the 'Released' state implications."
+    file: "access-modes-reclaim.md"
+    tags: ["rwo", "rwx", "reclaim", "retain", "delete"]
+  - id: "resize-and-expansion"
+    title: "Resize And Expansion"
+    summary: "allowVolumeExpansion, PVC resize flow, online vs offline expansion, FileSystemResizePending condition, shrinking is not allowed."
+    file: "resize-and-expansion.md"
+    tags: ["expansion", "resize", "online", "offline"]
+  - id: "pvc-pending-triage"
+    title: "PVC Pending Triage"
+    summary: "The decision tree for stuck PVCs: no matching SC, no matching PV, topology mismatch, provisioner down, selector too strict."
+    file: "pvc-pending-triage.md"
+    tags: ["troubleshooting", "pending", "triage"]

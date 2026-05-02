@@ -1,0 +1,37 @@
+id: "pods-and-lifecycle"
+title: "Pods And Lifecycle"
+description: "The Pod is the unit of scheduling. Covers spec anatomy, init containers, native sidecars, the probe trio, CrashLoopBackOff and ImagePullBackOff."
+component: "workload"
+domain: "workloads"
+tags:
+  - "pod"
+  - "lifecycle"
+  - "init-container"
+  - "sidecar"
+  - "probes"
+subtopics:
+  - id: "pod-spec-anatomy"
+    title: "Pod Spec Anatomy"
+    summary: "The full pod spec, top-to-bottom: containers, volumes, security context, affinity, lifecycle hooks. What every field actually does."
+    file: "pod-spec-anatomy.md"
+    tags: ["spec", "containers", "volumes"]
+  - id: "init-sidecar-multi-container"
+    title: "Init, Sidecar, Multi-Container"
+    summary: "Sequential init containers, the modern restartPolicy: Always sidecar pattern (1.29+), shared namespaces, common patterns (ambassador, adapter, log-shipper)."
+    file: "init-sidecar-multi-container.md"
+    tags: ["init", "sidecar", "multi-container"]
+  - id: "probes"
+    title: "Liveness, Readiness, Startup Probes"
+    summary: "What each probe does, how they interact, http/tcp/exec/grpc handlers, threshold tuning, common misconfig patterns."
+    file: "probes.md"
+    tags: ["probes", "liveness", "readiness", "startup"]
+  - id: "crashloopbackoff"
+    title: "CrashLoopBackOff"
+    summary: "Why a container restarts repeatedly: exit codes, OOMKilled, probe-driven kills, app misconfiguration. Systematic triage."
+    file: "crashloopbackoff.md"
+    tags: ["crashloopbackoff", "restart", "oomkilled", "exit-code"]
+  - id: "imagepullbackoff"
+    title: "ImagePullBackOff / ErrImagePull"
+    summary: "Image pull mechanics, registry auth, pull policies, private registry secrets, network/credential failures."
+    file: "imagepullbackoff.md"
+    tags: ["imagepull", "registry", "imagepullsecret"]

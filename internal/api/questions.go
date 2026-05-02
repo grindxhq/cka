@@ -39,6 +39,7 @@ func (h *QuestionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"weight":     q.Weight,
 		"context":    q.Context,
 		"task":       q.Task,
+		"guide":      q.Guide,
 		"hint":       q.Hint,
 	}
 	writeJSON(w, http.StatusOK, resp)

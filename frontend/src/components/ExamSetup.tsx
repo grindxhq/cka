@@ -3,6 +3,7 @@ import { useExam, type SetupProgress, type ClusterState } from '../hooks/useExam
 import { useTheme, colors } from '../hooks/useTheme';
 import { api } from '../api/client';
 import { Dashboard } from './Dashboard';
+import { RevisionDeck } from './RevisionDeck';
 import type { Prerequisites } from '../types';
 
 const difficultyColors: Record<string, string> = {
@@ -28,11 +29,17 @@ export function ExamSetup() {
   const [prereqs, setPrereqs] = useState<Prerequisites | null>(null);
   const [checking, setChecking] = useState(true);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [activePane, setActivePane] = useState<'exam' | 'deck'>('exam');
+  const [deckMounted, setDeckMounted] = useState(false);
 
   useEffect(() => {
     loadExams();
     checkStatus();
   }, []);
+
+  useEffect(() => {
+    if (activePane === 'deck') setDeckMounted(true);
+  }, [activePane]);
 
   const selectedExam = exams.find(e => e.id === selectedExamId);
 
@@ -85,15 +92,15 @@ export function ExamSetup() {
         background: isDark ? '#111114' : '#ffffff',
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '30px', height: '30px',
-            background: `linear-gradient(135deg, ${ACCENT}, #0891b2)`,
-            borderRadius: '6px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: 700, fontSize: '10px',
+            fontSize: '24px',
+            fontWeight: 800,
+            letterSpacing: '-0.9px',
+            color: c.questionHeading,
+            lineHeight: 1,
           }}>
-            K8s
+            grind<span style={{ color: ACCENT_HOVER }}>x</span>
           </div>
           <span style={{ fontSize: '17px', fontWeight: 700, color: c.questionHeading }}>
             CKA Mock Exam
@@ -153,7 +160,10 @@ export function ExamSetup() {
             return (
               <div
                 key={exam.id}
-                onClick={() => selectExam(exam.id)}
+                onClick={() => {
+                  setActivePane('exam');
+                  selectExam(exam.id);
+                }}
                 style={{
                   padding: '14px 16px',
                   cursor: 'pointer',
@@ -185,6 +195,42 @@ export function ExamSetup() {
               </div>
             );
           })}
+
+          <div style={{
+            margin: '14px 16px 10px',
+            borderTop: `1px solid ${c.cardBorder}`,
+          }} />
+
+          <button
+            onClick={() => setActivePane('deck')}
+            style={{
+              width: 'calc(100% - 32px)',
+              margin: '0 16px',
+              padding: '14px 16px',
+              borderRadius: '8px',
+              border: `1px solid ${c.cardBorder}`,
+              background: 'transparent',
+              color: c.questionText,
+              cursor: 'pointer',
+              textAlign: 'left',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = ACCENT;
+              e.currentTarget.style.background = isDark ? '#0b1d24' : '#ecfeff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = c.cardBorder;
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>
+              Revision Deck
+              <span style={{ marginLeft: '6px', fontSize: '11px', color: ACCENT_HOVER }}>→</span>
+            </div>
+            <div style={{ fontSize: '11px', color: c.questionMuted }}>
+              Component guides, pitfalls, and trace paths without starting Docker
+            </div>
+          </button>
         </div>
 
         {/* ── Right: selected exam details ── */}
@@ -193,6 +239,8 @@ export function ExamSetup() {
           padding: '24px 32px',
           background: isDark ? '#0a0a0c' : '#f4f4f5',
         }}>
+          {(
+            <>
           {/* Stats banner */}
           <div style={{
             display: 'grid',
@@ -447,7 +495,27 @@ export function ExamSetup() {
           >
             {loading ? 'Setting Up Exam...' : selectedExam ? `Start ${selectedExam.name}` : 'Select an Exam'}
           </button>
+            </>
+          )}
         </div>
+      </div>
+
+      {/* ── Deck overlay: full-screen slide-in ── */}
+      <div
+        aria-hidden={activePane !== 'deck'}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          background: isDark ? '#0a0a0c' : '#f4f4f5',
+          transform: activePane === 'deck' ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+          willChange: 'transform',
+          pointerEvents: activePane === 'deck' ? 'auto' : 'none',
+          boxShadow: activePane === 'deck' ? '0 0 40px rgba(0,0,0,0.35)' : 'none',
+        }}
+      >
+        {deckMounted && <RevisionDeck onClose={() => setActivePane('exam')} />}
       </div>
 
       <style>{`

@@ -1,0 +1,31 @@
+id: "static-pods"
+title: "Static Pods"
+description: "Revision deck for static pods: how kubelet runs pods from local manifest files, how mirror pods appear in the API, and how to safely edit and recover them."
+component: "control-plane"
+domain: "cluster-architecture"
+tags:
+  - "static-pods"
+  - "kubeadm"
+  - "manifests"
+  - "recovery"
+subtopics:
+  - id: "overview"
+    title: "How Static Pods Work"
+    summary: "The kubelet-first pod path: what static pods are, where they come from, and how they differ from regular pods."
+    file: "overview.md"
+    tags: ["overview", "kubelet"]
+  - id: "manifest-paths"
+    title: "Manifest Paths And Reconciliation"
+    summary: "Where kubelet looks, the filesystem watch loop, kubelet config knobs, and what triggers a reload."
+    file: "manifest-paths.md"
+    tags: ["paths", "kubelet-config", "reload"]
+  - id: "mirror-pods"
+    title: "Mirror Pods"
+    summary: "How the API sees static pods, why you can't kubectl delete them, and the ownership model."
+    file: "mirror-pods.md"
+    tags: ["mirror-pod", "api-view"]
+  - id: "safe-editing-recovery"
+    title: "Safe Editing And Recovery"
+    summary: "Editing patterns that don't break the control plane, and how to recover from a broken manifest."
+    file: "safe-editing-recovery.md"
+    tags: ["recovery", "editing", "apiserver"]

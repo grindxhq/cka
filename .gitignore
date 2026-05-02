@@ -38,3 +38,7 @@ vendor/
 # Temp
 tmp/
 *.log
+
+# Local AI assistant config (per-user, not shared)
+CLAUDE.md
+.claude/

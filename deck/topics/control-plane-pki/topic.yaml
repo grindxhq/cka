@@ -1,0 +1,31 @@
+id: "control-plane-pki"
+title: "Control Plane PKI"
+description: "Deep dive into the cluster's certificate ecosystem: what each cert is for, how to audit, renew, and recover from expiry."
+component: "cluster-ops"
+domain: "cluster-architecture"
+tags:
+  - "pki"
+  - "certificates"
+  - "tls"
+  - "kubeconfig"
+subtopics:
+  - id: "certificate-map"
+    title: "Certificate Map"
+    summary: "Every cert in /etc/kubernetes/pki/ explained: signer, purpose, SAN / subject, lifetime. The three CAs and the trust graph."
+    file: "certificate-map.md"
+    tags: ["ca", "certificates", "san"]
+  - id: "kubeconfigs-and-clients"
+    title: "Kubeconfigs And Clients"
+    summary: "Kubeconfig anatomy, building one from scratch, contexts, the admin.conf vs super-admin.conf distinction, external-auth kubeconfigs."
+    file: "kubeconfigs-and-clients.md"
+    tags: ["kubeconfig", "context", "client-cert"]
+  - id: "expiry-checks"
+    title: "Expiry Checks"
+    summary: "kubeadm certs check-expiration, openssl spot-checks, monitoring cert expiry proactively."
+    file: "expiry-checks.md"
+    tags: ["expiry", "openssl", "monitoring"]
+  - id: "renewal-and-recovery"
+    title: "Renewal And Recovery"
+    summary: "kubeadm certs renew, the restart-pods-after dance, cert rotation strategy, recovery from an expired CA."
+    file: "renewal-and-recovery.md"
+    tags: ["renewal", "rotation", "recovery"]

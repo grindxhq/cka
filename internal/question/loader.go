@@ -21,6 +21,8 @@ type ExamWithQuestions struct {
 type Store struct {
 	exams    []ExamWithQuestions
 	byExamID map[string]*ExamWithQuestions
+	decks    []DeckTopic
+	deckByID map[string]*DeckTopic
 
 	// Flattened view for backward compat (current exam's questions)
 	currentExamID string
@@ -28,24 +30,37 @@ type Store struct {
 	byID          map[string]*Question
 }
 
-// NewStoreFromFS loads all exams from an embedded filesystem.
-// It expects: dir/exams/<exam-id>/exam.yaml + question YAMLs
-// Falls back to flat dir//*.yaml (legacy single-exam mode).
-func NewStoreFromFS(fsys fs.FS, dir string) (*Store, error) {
+// NewStoreFromFS loads questions and standalone revision decks from an embedded filesystem.
+// It expects:
+//   - questionsDir/exams/<exam-id>/exam.yaml + question YAMLs
+//   - decksDir/<deck-id>/topic.yaml + markdown subtopics
+// Falls back to flat questionsDir/*.yaml (legacy single-exam mode).
+func NewStoreFromFS(fsys fs.FS, questionsDir, decksDir string) (*Store, error) {
 	s := &Store{
 		byExamID: make(map[string]*ExamWithQuestions),
 		byID:     make(map[string]*Question),
+		deckByID: make(map[string]*DeckTopic),
 	}
 
 	// Try new exam-based layout first: dir/exams/*/exam.yaml
-	examsDir := dir + "/exams"
+	examsDir := questionsDir + "/exams"
 	entries, err := fs.ReadDir(fsys, examsDir)
 	if err == nil && len(entries) > 0 {
-		return s.loadExams(fsys, examsDir, entries)
+		if _, err := s.loadExams(fsys, examsDir, entries); err != nil {
+			return nil, err
+		}
+	} else {
+		// Fallback: legacy flat layout (questions/*.yaml)
+		if _, err := s.loadLegacy(fsys, questionsDir); err != nil {
+			return nil, err
+		}
 	}
 
-	// Fallback: legacy flat layout (questions/*.yaml)
-	return s.loadLegacy(fsys, dir)
+	if err := s.loadDecks(fsys, decksDir); err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
 
 // loadExams loads the new exam-based layout.
@@ -119,6 +134,11 @@ func loadExamDir(fsys fs.FS, dir string) (*ExamWithQuestions, error) {
 		if q.ID == "" {
 			return nil, fmt.Errorf("%s: question missing 'id' field", f)
 		}
+		if q.Guide == "" {
+			if guide, ok := readSidecarMarkdown(fsys, dir+"/"+strings.TrimSuffix(f, ".yaml")+".md"); ok {
+				q.Guide = guide
+			}
+		}
 		questions = append(questions, q)
 	}
 
@@ -154,6 +174,11 @@ func (s *Store) loadLegacy(fsys fs.FS, dir string) (*Store, error) {
 		}
 		if q.ID == "" {
 			return nil, fmt.Errorf("%s: question missing 'id' field", f)
+		}
+		if q.Guide == "" {
+			if guide, ok := readSidecarMarkdown(fsys, strings.TrimSuffix(f, ".yaml")+".md"); ok {
+				q.Guide = guide
+			}
 		}
 		questions = append(questions, q)
 	}
@@ -243,7 +268,90 @@ func loadQuestion(path string) (Question, error) {
 	if q.ID == "" {
 		return Question{}, fmt.Errorf("question missing 'id' field")
 	}
+	if q.Guide == "" {
+		sidecarPath := strings.TrimSuffix(path, ".yaml") + ".md"
+		if data, err := os.ReadFile(sidecarPath); err == nil {
+			q.Guide = string(data)
+		}
+	}
 	return q, nil
+}
+
+func readSidecarMarkdown(fsys fs.FS, path string) (string, bool) {
+	data, err := fs.ReadFile(fsys, path)
+	if err != nil {
+		return "", false
+	}
+	return string(data), true
+}
+
+func (s *Store) loadDecks(fsys fs.FS, decksDir string) error {
+	entries, err := fs.ReadDir(fsys, decksDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("read decks dir: %w", err)
+	}
+
+	var deckDirs []string
+	for _, e := range entries {
+		if e.IsDir() {
+			deckDirs = append(deckDirs, e.Name())
+		}
+	}
+	sort.Strings(deckDirs)
+
+	for _, deckDir := range deckDirs {
+		deckPath := decksDir + "/" + deckDir
+		topic, err := loadDeckTopicDir(fsys, deckPath)
+		if err != nil {
+			return fmt.Errorf("load deck %s: %w", deckDir, err)
+		}
+		s.decks = append(s.decks, *topic)
+		s.deckByID[topic.ID] = &s.decks[len(s.decks)-1]
+	}
+
+	return nil
+}
+
+func loadDeckTopicDir(fsys fs.FS, dir string) (*DeckTopic, error) {
+	data, err := fs.ReadFile(fsys, dir+"/topic.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("read topic.yaml: %w", err)
+	}
+
+	var topic DeckTopic
+	if err := yaml.Unmarshal(data, &topic); err != nil {
+		return nil, fmt.Errorf("parse topic.yaml: %w", err)
+	}
+	if topic.ID == "" {
+		return nil, fmt.Errorf("topic.yaml missing 'id' field")
+	}
+	if topic.Title == "" {
+		return nil, fmt.Errorf("topic.yaml missing 'title' field")
+	}
+
+	for i := range topic.Subtopics {
+		st := &topic.Subtopics[i]
+		if st.ID == "" {
+			return nil, fmt.Errorf("subtopic in %s missing 'id' field", dir)
+		}
+		if st.Title == "" {
+			return nil, fmt.Errorf("subtopic %s in %s missing 'title' field", st.ID, dir)
+		}
+		if st.File == "" {
+			st.File = st.ID + ".md"
+		}
+		content, ok := readSidecarMarkdown(fsys, dir+"/"+st.File)
+		if !ok {
+			return nil, fmt.Errorf("missing markdown for subtopic %s: %s", st.ID, st.File)
+		}
+		st.Content = content
+	}
+	topic.SubtopicCount = len(topic.Subtopics)
+
+	return &topic, nil
 }
 
 // --- Exam access ---
@@ -299,6 +407,29 @@ func (s *Store) CurrentExam() *Exam {
 		return &ew.Exam
 	}
 	return nil
+}
+
+// Decks returns lightweight summaries of all available revision decks.
+func (s *Store) Decks() []DeckTopicSummary {
+	out := make([]DeckTopicSummary, len(s.decks))
+	for i, d := range s.decks {
+		out[i] = DeckTopicSummary{
+			ID:            d.ID,
+			Title:         d.Title,
+			Description:   d.Description,
+			Component:     d.Component,
+			Domain:        d.Domain,
+			Tags:          d.Tags,
+			SubtopicCount: len(d.Subtopics),
+		}
+	}
+	return out
+}
+
+// GetDeck returns a revision deck by ID.
+func (s *Store) GetDeck(id string) (*DeckTopic, bool) {
+	d, ok := s.deckByID[id]
+	return d, ok
 }
 
 // --- Question access (uses current exam) ---
